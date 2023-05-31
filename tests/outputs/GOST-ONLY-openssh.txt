@@ -1,0 +1,2 @@
+GSSAPIKeyExchange no
+RequiredRSASize 2048
