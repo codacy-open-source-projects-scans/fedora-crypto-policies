@@ -366,6 +366,8 @@ setting of the *group* parameter.
 *asymmetric_algorithms* is not controlled directly, but deduced from
 *sign* and *group*.
 
+* *NSS*: order of *group* values is ignored and built-in order is used instead.
+
 HISTORY
 -------
 
