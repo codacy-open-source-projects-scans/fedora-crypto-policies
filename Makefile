@@ -49,7 +49,7 @@ runpylint:
 	@echo "[ OK ]"
 
 runcodespell:
-	codespell -L gost,anull -S .git,./tests/krb5check/*,*.7,*.8
+	codespell -L gost,anull,bund -S .git,./tests/krb5check/*,*.7,*.8
 
 check:
 	python/build-crypto-policies.py --strict --test --flat policies tests/outputs

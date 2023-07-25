@@ -170,47 +170,42 @@ class NSSGenerator(ConfigGenerator):
 
     @classmethod
     def test_config(cls, config):
-        old_nss = os.getenv('OLD_NSS', None)
-        try:
-            nss_path = ctypes.util.find_library('nss3')
-            nss_lib = ctypes.CDLL(nss_path)
-            if not nss_lib.NSS_VersionCheck(b'3.65'):
-                # Cannot validate with pre-3.59 NSS
-                # that doesn't know ECDSA/RSA-PSS/RSA-PKCS/DSA
-                # identifiers yet.
-                # Fedora has them reverted even in F33's 3.65,
-                # the first one without a revert is F34's 3.65
-                cls.eprint('Working around nss-policy-check due to '
-                           'nss being older than 3.65')
-                old_nss = True
-        except AttributeError:
-            cls.eprint('Cannot determine nss version with ctypes')
+        nss_path = ctypes.util.find_library('nss3')
+        nss_lib = ctypes.CDLL(nss_path)
 
-        if not os.access('/usr/bin/nss-policy-check', os.X_OK):
-            return True
+        nss_lax = os.getenv('NSS_LAX', '0') == '1'
+        nss_is_lax_by_default = True
+        try:
+            if not nss_lib.NSS_VersionCheck(b'3.80'):
+                # NSS older than 3.80 uses strict config checking.
+                # 3.80 and newer ignores new keywords by default
+                # and needs extra switches to be strict.
+                nss_is_lax_by_default = False
+        except AttributeError:
+            cls.eprint('Cannot determine nss version with ctypes, '
+                       'assuming >=3.80')
+        options = ('-f value -f identifier'
+                   if nss_is_lax_by_default and not nss_lax else '')
 
         fd, path = mkstemp()
 
         ret = 255
         try:
             with os.fdopen(fd, 'w') as f:
-                f.write(config
-                        if not old_nss else
-                        config.replace(':ECDSA:', ':')
-                              .replace(':RSA-PSS:', ':')
-                              .replace(':RSA-PKCS:', ':')
-                              .replace(':DSA:', ':'))
+                f.write(config)
             try:
-                ret = call(f'/usr/bin/nss-policy-check {path} >/dev/null',
+                ret = call(f'/usr/bin/nss-policy-check {options} {path}'
+                           '>/dev/null',
                            shell=True)
             except CalledProcessError:
                 cls.eprint("/usr/bin/nss-policy-check: Execution failed")
         finally:
             os.unlink(path)
 
-        if ret == 2 and old_nss:
+        if ret == 2:
             cls.eprint("There is a warning in NSS generated policy")
-            cls.eprint("Ignoring it because we're using old NSS")
+            cls.eprint(f'Policy:\n{config}')
+            return False
         elif ret:
             cls.eprint("There is an error in NSS generated policy")
             cls.eprint(f'Policy:\n{config}')

@@ -154,6 +154,39 @@ PROVIDED POLICIES
   * *RSA* keys size: >= 3072
   * *TLS* protocols: *TLS* >= 1.2, *DTLS* >= 1.2
 
+*BSI*::
+  A security policy based on recommendations by the german government
+  agency BSI (Bundesamt fuer Sicherheit in der Informationstechnik,
+  translated as "agency for security in software technology") in its
+  ruleset BSI TR 02102 (TR - technical recommendation). The BSI TR 02102
+  standard is updated in regular intervals.
+
+  This policy does not allow the use of *SHA-1* in signature algorithms
+  (except *DNSSEC* and *RPM*).
+
+  The policy also provides some (not complete) preparation for
+  post-quantum encryption support in form of 256-bit symmetric encryption
+  requirement.
+
+  The *RSA* parameters are accepted if larger than 2047 bits, and
+  *Diffie-Hellman* parameters are accepted if larger than 3071 bits.
+
+  This policy provides at least 128-bit security, excepting the transition
+  of *RSA*.
+
+  * MACs: all *HMAC* with *SHA-256* or better + all modern MACs
+  * Curves: all prime >= 255 bits (including Bernstein curves)
+  * Signature algorithms: with *SHA-256* hash or better (no *DSA*)
+  * *TLS* Ciphers: >= 256-bit key, >= 128-bit block, only Authenticated
+    Encryption (AE) ciphers
+  * non-TLS Ciphers: same as *TLS* ciphers with added non AE ciphers
+  * key exchange: *ECDHE*, *DHE* (no *DHE-DSS*, no *RSA*)
+  * *DH* params size: >= 3072
+  * *RSA* keys size: >= 2048 (until end of 2023, then it will switch to 3072)
+  * *TLS* protocols: *TLS* >= 1.2, *DTLS* >= 1.2
+
+  Note that compared to others profiles *Chacha20* and *Camellia* are not
+  recommended by the BSI.
 
 *FIPS*::
   A policy to aid conformance to the *FIPS 140-2* requirements.

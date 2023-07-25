@@ -15,19 +15,22 @@ if shutil.which('nss-policy-check') is None:
     sys.exit(0)
 
 
-# Cannot validate with pre-3.59 NSS that doesn't know ECDSA/RSA-PSS/RSA-PKCS
-# identifiers yet. Checking for 3.65 because Fedora keeps reverting the change.
-# First one with unreverted is F34's 3.65 (but not F33's 3.65!)
-old_nss = os.getenv('OLD_NSS', None)
+nss_path = ctypes.util.find_library('nss3')
+nss_lib = ctypes.CDLL(nss_path)
+
+nss_lax = os.getenv('NSS_LAX', '0') == '1'
+nss_is_lax_by_default = True
 try:
-    nss = ctypes.CDLL(ctypes.util.find_library('nss3'))
-    if not nss.NSS_VersionCheck(b'3.65'):
-        print('Working around nss-policy-check verification '
-              'due to nss being older than 3.65', file=sys.stderr)
-        old_nss = True
+    if not nss_lib.NSS_VersionCheck(b'3.80'):
+        # NSS older than 3.80 uses strict config checking.
+        # 3.80 and newer ignores new keywords by default
+        # and needs extra switches to be strict.
+        nss_is_lax_by_default = False
 except AttributeError:
-    print('Cannot determine nss version with ctypes, hoping for >=3.59',
+    print('Cannot determine nss version with ctypes, assuming >=3.80',
           file=sys.stderr)
+options = (['-f', 'value', '-f', 'identifier']
+           if nss_is_lax_by_default and not nss_lax else [])
 
 
 print('Checking the NSS configuration')
@@ -39,14 +42,9 @@ for policy_path in glob.glob('tests/outputs/*-nss.txt'):
         with open(policy_path, encoding='utf-8') as pf:
             config = pf.read()
         with tempfile.NamedTemporaryFile('w', delete=False) as tf:
-            tf.write(config
-                     if not old_nss else
-                     config.replace(':ECDSA:', ':')
-                           .replace(':RSA-PSS:', ':')
-                           .replace(':RSA-PKCS:', ':')
-                           .replace(':DSA:', ':'))
+            tf.write(config)
 
-        with subprocess.Popen(['nss-policy-check', tf.name],
+        with subprocess.Popen(['nss-policy-check'] + options + [tf.name],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT) as p:
             output, _ = p.communicate()

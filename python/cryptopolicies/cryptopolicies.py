@@ -14,12 +14,17 @@ from . import alg_lists
 from . import validation  # moved out of the way to not obscure the flow
 
 
+# Dunder (underscore-prefixed) options are ones
+# we don't advertise for direct usage, specific to a narrow set of policies.
+# We'd rather have users build up upon policies we ship that set them.
+
+
 # Defaults of integer property values (doubles as an allowlist)
 
 INT_DEFAULTS = {k: 0 for k in (
     'arbitrary_dh_groups',
     'min_dh_size', 'min_dsa_size', 'min_rsa_size',
-    '__openssl_block_sha1_signatures',
+    '__openssl_block_sha1_signatures',  # FUTURE/TEST-FEDORA39/NO-SHA1
     'sha1_in_certs',
     'ssh_certs', 'ssh_etm',
 )}
