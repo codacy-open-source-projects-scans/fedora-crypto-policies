@@ -13,6 +13,7 @@
 # 	HMAC-SHA1 is not valid anymore
 # 	UMAC is for SSH... check TODO
 mac = AEAD HMAC-SHA2-256 UMAC-128 HMAC-SHA2-384 HMAC-SHA2-512
+mac@Kerberos = HMAC-SHA2-384 HMAC-SHA2-256 AEAD UMAC-128 HMAC-SHA2-512
 
 # BSI TR 02102-2 / revision 2023.1, Table 4 "Empfohlene Diffie-Hellman-Gruppen für TLS 1.2"
 # not listed in BSI TR, but could be included: FFDHE-6144 FFDHE-8192

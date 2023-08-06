@@ -264,6 +264,7 @@ def test_cryptopolicy_to_string_empty(tmpdir):
         sha1_in_certs = 0
         ssh_certs = 0
         ssh_etm = 0
+        __ems = DEFAULT
         # No scope-specific properties found.
     ''').lstrip()
     cp = _policy(tmpdir, EMPTYPOL='', EMPTYSUBPOL1='\n', EMPTYSUBPOL2='\t')
@@ -295,12 +296,14 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
         sha1_in_certs = 0
         ssh_certs = 0
         ssh_etm = 0
+        __ems = ENFORCE
         # Scope-specific properties derived for select backends:
         cipher@gnutls = DES-CBC
         hash@gnutls =
         sha1_in_certs@gnutls = 1
         cipher@java-tls = DES-CBC
         cipher@nss = DES-CBC
+        __ems@nss = RELAX
         cipher@openssl = NULL DES-CBC
     ''').lstrip()
     cp = _policy(tmpdir,
@@ -312,5 +315,7 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
                      cipher@openssl = +NULL
                      sha1_in_certs@gnutls = 1
                      hash@gnutls = -MD5
+                     __ems = ENFORCE
+                     __ems@nss = RELAX
                  ''')
     assert str(cp) == reference

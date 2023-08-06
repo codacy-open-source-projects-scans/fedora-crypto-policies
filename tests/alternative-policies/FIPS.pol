@@ -13,6 +13,10 @@
 # TLS protocols: TLS >= 1.2, DTLS >= 1.2
 
 mac = AEAD HMAC-SHA2-256 HMAC-SHA1 HMAC-SHA2-384 HMAC-SHA2-512
+mac@krb5 = -HMAC-SHA2-384
+mac@krb5 = +HMAC-SHA2-384
+mac@krb5 = -HMAC-SHA1
+mac@krb5 = HMAC-SHA1+
 
 group = SECP256R1 SECP521R1 SECP384R1 \
         FFDHE-2048 FFDHE-3072 FFDHE-4096 FFDHE-6144 FFDHE-8192
@@ -72,3 +76,5 @@ sha1_in_dnssec = 0
 arbitrary_dh_groups = 1
 ssh_certs = 1
 ssh_etm = 1
+
+__ems = ENFORCE

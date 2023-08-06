@@ -140,6 +140,11 @@ class NSSGenerator(ConfigGenerator):
             except KeyError:
                 pass
 
+        # option not in Fedora yet, default to True
+        no_tls_require_ems = os.getenv('NSS_NO_TLS_REQUIRE_EMS', '1') == '1'
+        if policy.enums['__ems'] == 'ENFORCE' and not no_tls_require_ems:
+            s = cls.append(s, 'TLS-REQUIRE-EMS')
+
         enabled_sigalgs = set()
         for i in p['sign']:
             for prefix, sigalg in cls.sign_prefix_ordmap.items():

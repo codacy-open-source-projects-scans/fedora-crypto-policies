@@ -14,7 +14,7 @@ class KRB5Generator(ConfigGenerator):
         'CAMELLIA-256-CBC': 'camellia256-cts-cmac',
         'CAMELLIA-128-CBC': 'camellia128-cts-cmac',
         'CAMELLIA-128-CTS': 'camellia128-cts-cmac',
-        # RC4 is enabled with rc4_md5_in_krb5
+        # RC4 is enabled separately
     }
 
     cipher_mac_map = {
@@ -22,7 +22,7 @@ class KRB5Generator(ConfigGenerator):
         'AES-256-CBC-HMAC-SHA2-384': 'aes256-cts-hmac-sha384-192',
         'AES-128-CBC-HMAC-SHA1': 'aes128-cts-hmac-sha1-96',
         'AES-128-CBC-HMAC-SHA2-256': 'aes128-cts-hmac-sha256-128',
-        # RC4 is enabled with rc4_md5_in_krb5
+        # RC4 is enabled separately
     }
 
     @classmethod
@@ -33,13 +33,14 @@ class KRB5Generator(ConfigGenerator):
         cfg = '[libdefaults]\n'
         cfg += 'permitted_enctypes = '
         s = ''
-        for i in p['cipher']:
-            for j in p['mac']:
+        for j in p['mac']:
+            for i in p['cipher']:
                 try:
-                    s = cls.append(s,
-                                   cls.cipher_mac_map[i + '-' + j], sep)
+                    s = cls.append(s, cls.cipher_mac_map[i + '-' + j], sep)
                 except KeyError:
                     pass
+
+        for i in p['cipher']:
             try:
                 s = cls.append(s, cls.cipher_map[i], sep)
             except KeyError:

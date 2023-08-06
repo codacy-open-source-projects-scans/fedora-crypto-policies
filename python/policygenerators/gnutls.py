@@ -244,6 +244,18 @@ class GnuTLSGenerator(ConfigGenerator):
             if i in cls.protocol_map:
                 s += f'enabled-version = {cls.protocol_map[i]}\n'
 
+        # option not in Fedora yet, default to True
+        no_tls_session_hash = (
+            os.getenv('GNUTLS_NO_TLS_SESSION_HASH', '1') == '1'
+        )
+        if not no_tls_session_hash:
+            if policy.enums['__ems'] == 'ENFORCE':
+                s += 'tls-session-hash = require\n'
+            elif policy.enums['__ems'] == 'RELAX':
+                s += 'tls-session-hash = request\n'
+            elif policy.enums['__ems'] == 'DEFAULT':
+                pass  # let the library determine a fitting default
+
         # We cannot separate RSA strength from DH params.
         min_dh_size = policy.integers['min_dh_size']
         min_rsa_size = policy.integers['min_rsa_size']

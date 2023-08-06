@@ -30,6 +30,12 @@ class NonIntPropertyIntValueError(PolicySyntaxError):
                          ' value must not be an integer')
 
 
+class BadEnumValueError(PolicySyntaxError):
+    def __init__(self, enum_name, value, acceptable_values):
+        super().__init__(f'Bad value of policy property `{enum_name}`:'
+                         f' {value}; must be one of {acceptable_values}')
+
+
 def count_equals_signs(line):
     if line.count('=') != 1:
         raise MalformedLine(line)

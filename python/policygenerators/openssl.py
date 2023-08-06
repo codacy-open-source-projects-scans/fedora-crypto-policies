@@ -15,6 +15,12 @@ alg_section = evp_properties
 rh-allow-sha1-signatures = {}
 '''
 
+FIPS_MODULE_CONFIG = '''
+[fips_sect]
+tls1-prf-ems-check = {}
+activate = 1
+'''
+
 
 class OpenSSLGenerator(ConfigGenerator):
     CONFIG_NAME = 'openssl'
@@ -254,6 +260,9 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         groups = [cls.group_map[i] for i in p['group'] if i in cls.group_map]
         s += 'Groups = ' + ':'.join(groups) + '\n'
 
+        if policy.enums['__ems'] == 'RELAX':
+            s += 'Options = RHNoEnforceEMSinFIPS\n'
+
         # In the future it'll be just
         # s += RH_SHA1_SECTION.format('yes' if 'SHA1' in p['hash'] else 'no')
         # but for now we slow down the roll-out and we have
@@ -261,6 +270,24 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         s += RH_SHA1_SECTION.format('yes' if sha1_sig else 'no')
 
         return s
+
+    @classmethod
+    def test_config(cls, config):  # pylint: disable=unused-argument
+        return True
+
+
+class OpenSSLFIPSGenerator(ConfigGenerator):
+    CONFIG_NAME = 'openssl_fips'
+    SCOPES = {'tls', 'ssl', 'openssl'}
+
+    @classmethod
+    def generate_config(cls, policy):
+        # OpenSSL EMS relaxation is special
+        # in that it uses a separate FIPS module config
+        # and, just in case, EMS is enforcing by default.
+        # It only puts `= 0` there if it's explicitly relaxed.
+        # That's the reason why `__ems` is a tri-state enum.
+        return FIPS_MODULE_CONFIG.format(int(policy.enums['__ems'] != 'RELAX'))
 
     @classmethod
     def test_config(cls, config):  # pylint: disable=unused-argument

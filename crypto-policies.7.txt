@@ -189,9 +189,9 @@ PROVIDED POLICIES
   recommended by the BSI.
 
 *FIPS*::
-  A policy to aid conformance to the *FIPS 140-2* requirements.
+  A policy to aid conformance to the *FIPS 140* requirements.
   This policy is used internally by the *fips-mode-setup(8)* tool
-  which can switch the system into the *FIPS 140-2* mode.
+  which can switch the system into the *FIPS 140* mode.
   This policy provides at least 112-bit security.
 
   * MACs: all *HMAC* with *SHA1* or better
@@ -305,7 +305,7 @@ COMMANDS
   This command allows the system administrator to enable, or disable the
   system FIPS mode and also apply the *FIPS* cryptographic policy
   which limits the allowed algorithms and protocols to these allowed by
-  the FIPS 140-2 requirements.
+  the FIPS 140 requirements.
 
 
 NOTES

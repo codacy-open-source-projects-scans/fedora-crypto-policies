@@ -10,7 +10,7 @@
 # * FUTURE: A policy to provide security on a conservative level that is
 #   believed to withstand any near-term future attacks (128-bit security).
 #
-# * FIPS: Policy that enables only FIPS 140-2 approved or allowed algorithms.
+# * FIPS: Policy that enables only FIPS 140 approved or allowed algorithms.
 #
 # After modifying this file, you need to run update-crypto-policies
 # for the changes to propagate.

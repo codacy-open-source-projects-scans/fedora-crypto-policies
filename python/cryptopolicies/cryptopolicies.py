@@ -30,6 +30,13 @@ INT_DEFAULTS = {k: 0 for k in (
 )}
 
 
+# For enum values, first value works as default,
+
+ENUMS = {
+    '__ems': ('DEFAULT', 'ENFORCE', 'RELAX'),  # FIPS/NO-ENFORCE-EMS
+}
+
+
 # Scopes (`@!ipsec`) and matching them
 
 SCOPE_ANY = '*'
@@ -118,6 +125,7 @@ class Operation(enum.Enum):
     APPEND = 3    # cipher = NULL+
     OMIT = 4      # cipher = -NULL
     SET_INT = 5   # sha1_in_certs = 0; setting to something that's all digits
+    SET_ENUM = 6  # __ems = ENFORCE
 
     def __repr__(self):  # to unify the output between Python versions
         return f'Operation.{self.name}'
@@ -138,6 +146,8 @@ def parse_rhs(rhs, prop_name):
     >>> parse_rhs('+*DES-CBC', 'cipher')
     [(Operation.PREPEND, 'DES-CBC'),
      (Operation.PREPEND, '3DES-CBC')]
+    >>> parse_rhs('ENFORCE', '__ems')
+    [(Operation.SET_ENUM, 'ENFORCE')]
     """
     def differential(v):
         return v.startswith('+') or v.endswith('+') or v.startswith('-')
@@ -145,15 +155,21 @@ def parse_rhs(rhs, prop_name):
     if rhs.isdigit():
         if prop_name not in alg_lists.ALL and prop_name in INT_DEFAULTS:
             return [(Operation.SET_INT, int(rhs))]
-        elif prop_name in alg_lists.ALL:
+        elif prop_name in alg_lists.ALL or prop_name in ENUMS:
             raise validation.rules.NonIntPropertyIntValueError(prop_name)
         else:
             assert prop_name not in alg_lists.ALL
             assert prop_name not in INT_DEFAULTS
+            assert prop_name not in ENUMS
             # pass for now, it's gonna be caught as non-existing algclass
     else:
         if prop_name in INT_DEFAULTS:
             raise validation.rules.IntPropertyNonIntValueError(prop_name)
+        if prop_name in ENUMS:
+            if rhs not in ENUMS[prop_name]:
+                raise validation.rules.BadEnumValueError(prop_name, rhs,
+                                                         ENUMS[prop_name])
+            return [(Operation.SET_ENUM, rhs)]
 
     values = rhs.split()
 
@@ -327,6 +343,7 @@ class ScopedPolicy:
     def __init__(self, directives, relevant_scopes=None):
         relevant_scopes = relevant_scopes or set()
         self.integers = INT_DEFAULTS.copy()
+        self.enums = {k: v[0] for k, v in ENUMS.items()}
         self.enabled = {prop_name: [] for prop_name in alg_lists.ALL}
 
         for directive in directives:
@@ -350,9 +367,11 @@ class ScopedPolicy:
                         e for e in self.enabled[directive.prop_name]
                         if e != directive.value
                     ]
-                else:
-                    assert directive.operation == Operation.SET_INT
+                elif directive.operation == Operation.SET_INT:
                     self.integers[directive.prop_name] = directive.value
+                else:
+                    assert directive.operation == Operation.SET_ENUM
+                    self.enums[directive.prop_name] = directive.value
         assert len(self.enabled) == len(set(self.enabled))
 
         self.disabled = {prop_name: [e for e in alg_list
@@ -444,14 +463,17 @@ class UnscopedCryptoPolicy:
         s += '# it is provided for review convenience only.\n'
         s += '#\n'
         s += '# Baseline values for all scopes:\n'
-        generic_all = {**generic_scoped.enabled, **generic_scoped.integers}
+        generic_all = {**generic_scoped.enabled,
+                       **generic_scoped.integers,
+                       **generic_scoped.enums}
         for prop_name, value in generic_all.items():
             s += fmt(prop_name, value)
         anything_scope_specific = False
         for scope_name, scope_set in DUMPABLE_SCOPES.items():
             specific_scoped = self.scoped(scopes=scope_set)
             specific_all = {**specific_scoped.enabled,
-                            **specific_scoped.integers}
+                            **specific_scoped.integers,
+                            **specific_scoped.enums}
             for prop_name, value in specific_all.items():
                 if value != generic_all[prop_name]:
                     if not anything_scope_specific:

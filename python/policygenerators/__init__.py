@@ -15,6 +15,7 @@ from .openssh import OpenSSHClientGenerator
 from .openssh import OpenSSHServerGenerator
 from .openssl import OpenSSLConfigGenerator
 from .openssl import OpenSSLGenerator
+from .openssl import OpenSSLFIPSGenerator
 from .sequoia import SequoiaGenerator
 from .sequoia import RPMSequoiaGenerator
 
@@ -31,6 +32,7 @@ __all__ = [
     'OpenSSHServerGenerator',
     'OpenSSLConfigGenerator',
     'OpenSSLGenerator',
+    'OpenSSLFIPSGenerator',
     'SequoiaGenerator',
     'RPMSequoiaGenerator',
 ]

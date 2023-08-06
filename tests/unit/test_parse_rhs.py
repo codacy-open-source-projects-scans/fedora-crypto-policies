@@ -13,6 +13,7 @@ from python.cryptopolicies.validation.rules import (
     MixedDifferentialNonDifferentialError,
     IntPropertyNonIntValueError,
     NonIntPropertyIntValueError,
+    BadEnumValueError,
 )
 
 
@@ -39,3 +40,9 @@ def test_parse_rhs():
         parse_rhs('0', 'cipher')
     with pytest.raises(AlgorithmClassUnknownError):
         parse_rhs('0', 'nonex_algo_class')
+
+    assert parse_rhs('RELAX', '__ems') == [(Operation.SET_ENUM, 'RELAX')]
+    with pytest.raises(NonIntPropertyIntValueError):
+        parse_rhs('0', '__ems')
+    with pytest.raises(BadEnumValueError):
+        parse_rhs('INVALID', '__ems')

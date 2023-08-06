@@ -10,7 +10,7 @@ use profiles::common;
 
 my @modules = ("gnutls", "openssl", "opensslcnf", "bind", "java", "krb5", "nss",
 	       "openssh", "opensshserver", "libreswan", "libssh", "sequoia",
-	       "rpm-sequoia");
+	       "rpm-sequoia", "openssl_fips");
 my ($mod, $contents, $profile);
 my @reloadcmds = ();
 

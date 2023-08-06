@@ -55,6 +55,7 @@ check:
 	python/build-crypto-policies.py --strict --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy FIPS:OSPP --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy FIPS:ECDHE-ONLY --test --flat policies tests/outputs
+	python/build-crypto-policies.py --strict --policy FIPS:NO-ENFORCE-EMS --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy DEFAULT:GOST --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy GOST-ONLY --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy LEGACY:AD-SUPPORT --test --flat policies tests/outputs
@@ -75,6 +76,7 @@ check-alternatives: check
 	python/build-crypto-policies.py --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy FIPS:OSPP --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy FIPS:ECDHE-ONLY --test --flat tests/alternative-policies output/alt
+	python/build-crypto-policies.py --policy FIPS:NO-ENFORCE-EMS --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy GOST-ONLY --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy LEGACY:AD-SUPPORT --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy DEFAULT:GOST --test --flat tests/alternative-policies output/alt
@@ -107,6 +109,7 @@ diff-outputs:
 	python/build-crypto-policies.py --test --flat policies output/current || true
 	python/build-crypto-policies.py --policy FIPS:OSPP --test --flat policies output/current || true
 	python/build-crypto-policies.py --policy FIPS:ECDHE-ONLY --test --flat policies output/current || true
+	python/build-crypto-policies.py --policy FIPS:NO-ENFORCE-EMS --test --flat policies output/current || true
 	python/build-crypto-policies.py --policy DEFAULT:GOST --test --flat policies output/current || true
 	$(DIFFTOOL) tests/outputs output/current
 
