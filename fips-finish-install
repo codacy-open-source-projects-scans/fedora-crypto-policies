@@ -10,9 +10,10 @@ if test -f /run/ostree-booted; then
     is_ostree_system=1
 fi
 
-if test x"$1" !=  x--complete ; then
-	echo "Complete the installation of FIPS modules."
-	echo "usage: $0 --complete"
+if test x"$1" != x--complete && test x"$1" != x--undo ; then
+	echo "Complete / undo the installation of FIPS modules."
+	echo "Not to be used directly, see fips-mode-setup(8)."
+	echo "usage: $0 --complete|--undo (unsupported)"
 	exit 2
 fi
 
@@ -23,8 +24,6 @@ fi
 
 umask 022
 
-trap "rm -f $dracut_cfg" ERR
-
 if test ! -d $dracut_cfg_d -o ! -d /boot -o "$is_ostree_system" = 1 ; then
 	# No dracut configuration or boot directory present, do not try to modify it.
 	# Also, on OSTree systems, we currently rely on the initrd already including
@@ -32,11 +31,16 @@ if test ! -d $dracut_cfg_d -o ! -d /boot -o "$is_ostree_system" = 1 ; then
 	exit 0
 fi
 
-cat >$dracut_cfg <<EOF
+if test x"$1" == x--complete; then
+	trap "rm -f $dracut_cfg" ERR
+	cat >$dracut_cfg <<EOF
 # turn on fips module
 
 add_dracutmodules+=" fips "
 EOF
+elif test x"$1" == x--undo; then
+	rm -f $dracut_cfg
+fi
 
 echo "Kernel initramdisks are being regenerated. This might take some time."
 

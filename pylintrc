@@ -21,6 +21,8 @@ disable=
     invalid-name,
     no-else-return,
     duplicate-code,  # libssh-openssh trigger a lot of these
+    use-implicit-booleaness-not-comparison-to-zero,
+    use-implicit-booleaness-not-comparison-to-string,
 
 
 [REPORTS]

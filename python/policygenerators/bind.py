@@ -49,9 +49,9 @@ class BindGenerator(ConfigGenerator):
                     s += f'{disabled_sign};\n'
             except KeyError:
                 pass
-        if 'ECDSA-SHA256' not in ip['sign'] and 'SECP256R1' in ip['group']:
+        if 'ECDSA-SHA2-256' not in ip['sign'] and 'SECP256R1' in ip['group']:
             s += 'ECDSAP256SHA256;\n'  # additionally disabled on lack of P-256
-        if 'ECDSA-SHA384' not in ip['sign'] and 'SECP384R1' in ip['group']:
+        if 'ECDSA-SHA2-384' not in ip['sign'] and 'SECP384R1' in ip['group']:
             s += 'ECDSAP384SHA384;\n'  # additionally disabled on lack of P-384
         s += '};\n'
 

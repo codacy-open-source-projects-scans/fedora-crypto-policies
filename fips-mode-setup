@@ -185,6 +185,7 @@ if test $enable_fips = 1 ; then
 	fi
 	update-crypto-policies --no-reload --set "${target}" 2>/dev/null
 else
+	fips-finish-install --undo
 	update-crypto-policies --no-reload --set DEFAULT 2>/dev/null
 fi
 

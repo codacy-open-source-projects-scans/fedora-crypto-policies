@@ -26,7 +26,7 @@ fips-finish-install - complete the installation of FIPS modules.
 
 SYNOPSIS
 --------
-*fips-finish-install* --complete
+*fips-finish-install* [--complete|--undo]
 
 
 DESCRIPTION
@@ -35,10 +35,6 @@ fips-finish-install(8) is used by the fips-mode-setup(8) command to
 complete the installation of the system FIPS modules. The tool is not
 supposed to be called directly by the system administrator, but it is
 possible to do so.
-
-The completion of the installation cannot be undone. The system has to
-be reinstalled if the FIPS modules are not supposed to be installed
-anymore.
 
 
 [[options]]
@@ -50,6 +46,12 @@ The only recognized and mandatory option is:
 --complete:   The command completes the FIPS module installation and
                 calls 'dracut -f' to regenerate the initramfs.
 
+--undo:       The command undoes some of the FIPS module installation steps.
+              Please note that module installation cannot be undone
+              without reformatting of and overwriting, at least once,
+              the platform’s hard drive or other permanent storage media.
+              This option is not meant to be used in production,
+              is not supported, and is implemented for testing purposes only.
 
 SEE ALSO
 --------

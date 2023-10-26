@@ -54,7 +54,12 @@ The following options are available in fips-mode-setup tool.
 
 * --enable:     Enables the system FIPS mode.
 
-* --disable:    Undo some of the FIPS-enablement steps (unsupported).
+* --disable:    Undo some of the FIPS-enablement steps.
+                Please note that module installation cannot be undone
+                without reformatting of and overwriting, at least once,
+                the platform’s hard drive or other permanent storage media.
+                This option is not meant to be used in production,
+                is not supported, and is implemented for testing purposes only.
 
 * --check:      Checks for inconsistently enabled FIPS mode.
                 Exits successfully (0) for both consistently-enabled FIPS mode
