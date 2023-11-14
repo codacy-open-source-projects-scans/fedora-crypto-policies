@@ -65,7 +65,7 @@ sha1_in_certs = 0
 
 arbitrary_dh_groups = 1
 ssh_certs = 1
-ssh_etm = 1
+etm@ssh = ANY
 
 # https://fedoraproject.org/wiki/Changes/StrongCryptoSettings3Forewarning1
 # SHA-1 signatures are blocked in OpenSSL in FUTURE only

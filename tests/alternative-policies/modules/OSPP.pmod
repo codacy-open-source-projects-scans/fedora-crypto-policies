@@ -43,7 +43,7 @@ ssh_cipher = -AES-256-CCM -AES-128-CCM -AES-128-GCM -AES-128-CTR
 tls_cipher = -AES-256-CCM -AES-128-CCM -AES-128-GCM -AES-128-CBC
 
 ssh_certs = 0
-ssh_etm = 0
+etm@SSH = DISABLE_ETM
 
 protocol = -TLS1.3
 

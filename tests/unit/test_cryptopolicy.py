@@ -187,6 +187,30 @@ def test_cryptopolicy_sha1_in_dnssec(tmpdir):
     assert 'DSA-SHA1' in b.disabled['sign']
 
 
+def test_cryptopolicy_compat_to_enum(tmpdir):
+    with pytest.warns(
+            PolicySyntaxDeprecationWarning,
+            match="option ssh_etm = 0 is deprecated, please rewrite your"
+            " rules using etm@SSH = DISABLE_ETM;.*"):
+        cp = _policy(tmpdir, TESTPOL='ssh_etm =  0')
+    assert cp.scoped({'tls', 'openssl'}).enums['etm'] == 'ANY'
+    assert cp.scoped({'ssh', 'openssh'}).enums['etm'] == 'DISABLE_ETM'
+
+
+def test_cryptopolicy_compat_scoped_ssh_etm_to_enum(tmpdir):
+    with pytest.warns(
+            PolicySyntaxDeprecationWarning,
+            match=r"option ssh_etm@{OpenSSH-server,OpenSSH-client} = 0 is"
+            r" deprecated, please rewrite your rules using"
+            r" etm@{OpenSSH-server,OpenSSH-client} = DISABLE_ETM;.*"):
+        cp = _policy(tmpdir,
+                     TESTPOL='ssh_etm@{OpenSSH-server,OpenSSH-client} = 0')
+    assert cp.scoped({'tls', 'openssl'}).enums['etm'] == 'ANY'
+    assert cp.scoped({'ssh', 'openssh'}).enums['etm'] == 'ANY'
+    assert cp.scoped({'ssh', 'openssh-client'}).enums['etm'] == 'DISABLE_ETM'
+    assert cp.scoped({'ssh', 'openssh-server'}).enums['etm'] == 'DISABLE_ETM'
+
+
 def test_cryptopolicy_prepend_order(tmpdir):
     assert glob('AES-192-*M', 'cipher') == ['AES-192-GCM', 'AES-192-CCM']
     # AES-192-*M expands to AES-192-GCM AES-192-CCM ...
@@ -263,7 +287,7 @@ def test_cryptopolicy_to_string_empty(tmpdir):
         __openssl_block_sha1_signatures = 0
         sha1_in_certs = 0
         ssh_certs = 0
-        ssh_etm = 0
+        etm = ANY
         __ems = DEFAULT
         # No scope-specific properties found.
     ''').lstrip()
@@ -295,15 +319,18 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
         __openssl_block_sha1_signatures = 0
         sha1_in_certs = 0
         ssh_certs = 0
-        ssh_etm = 0
+        etm = ANY
         __ems = ENFORCE
         # Scope-specific properties derived for select backends:
         cipher@gnutls = DES-CBC
         hash@gnutls =
         sha1_in_certs@gnutls = 1
         cipher@java-tls = DES-CBC
+        etm@libssh = DISABLE_NON_ETM
         cipher@nss = DES-CBC
         __ems@nss = RELAX
+        etm@openssh-client = DISABLE_NON_ETM
+        etm@openssh-server = DISABLE_NON_ETM
         cipher@openssl = NULL DES-CBC
     ''').lstrip()
     cp = _policy(tmpdir,
@@ -315,6 +342,7 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
                      cipher@openssl = +NULL
                      sha1_in_certs@gnutls = 1
                      hash@gnutls = -MD5
+                     etm@SSH = DISABLE_NON_ETM
                      __ems = ENFORCE
                      __ems@nss = RELAX
                  ''')

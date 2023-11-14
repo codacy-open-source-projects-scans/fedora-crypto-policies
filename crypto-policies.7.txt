@@ -267,8 +267,9 @@ The available options are:
     *Diffie-Hellman* is allowed, 0 otherwise
   * *ssh_certs*: Value of 1 if *OpenSSH* certificate authentication is
      allowed, 0 otherwise
-  * *ssh_etm*: Value of 1 if *OpenSSH* EtM (encrypt-then-mac) extension is
-     allowed, 0 otherwise
+  * *etm*: *ANY*/*DISABLE_ETM*/*DISABLE_NON_ETM* allows both EtM (Encrypt-then-Mac)
+     and E&M (Encrypt-and-Mac), disables EtM, and disables E&M respectively.
+     (Currently only implemented for SSH, do not use without *@SSH* scope.)
 
 Full policy definition files have suffix `.pol`,
 subpolicy files have suffix `.pmod`.
@@ -449,6 +450,8 @@ The following options are deprecated, please rewrite your policies:
   * *sha1_in_dnssec*: Allow *SHA1* usage in DNSSec protocol even if it is
     not present in the *hash* and *sign* lists
     (recommended replacements: *hash@DNSSec*, *sign@DNSSec*).
+  * *ssh_etm*: Value of 1 if *OpenSSH* EtM (encrypt-then-mac) extension is
+     allowed, 0 otherwise. Use *etm@SSH* instead.
 
 FILES
 -----

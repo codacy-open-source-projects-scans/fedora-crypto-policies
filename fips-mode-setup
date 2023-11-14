@@ -77,7 +77,7 @@ fi
 
 
 if [ "$(id -u)" != 0 ]; then
-	echo "You must be root to run $(basename $0)"
+	echo >&2 "You must be root to run $(basename "$0")"
 	exit 1
 fi
 
@@ -97,7 +97,7 @@ fi
 
 # Detect 3: crypto-policy base policy
 current_policy="$(cat /etc/crypto-policies/state/current)"
-base_policy="$(echo $current_policy| cut -f 1 -d :)"
+base_policy="$(echo "$current_policy" | cut -f 1 -d :)"
 if test "$base_policy" == "FIPS" ; then
 	base_policy_is_fips=1
 else
@@ -111,7 +111,7 @@ if test $check = 1 ; then
 	fips_negative=0
 
 	# Display 1: kernel FIPS flag
-	cond_echo "FIPS mode is $(enable2txt $fips_kernel_enabled)."
+	cond_echo "FIPS mode is $(enable2txt "$fips_kernel_enabled")."
 
 	# Display 2: initramfs fips module
 	if test "$initramfs_inspectable" = 1 ; then
@@ -166,12 +166,29 @@ if test $check = 1 ; then
 	exit 0
 fi
 
+# Boot configuration
+if test "$boot_config" = 1 && test ! -x "$(command -v grubby)" ; then
+	echo >&2 "The grubby command is missing, please configure the bootloader manually."
+	boot_config=0
+fi
+
+if test "$boot_config" = 1 && test ! -d /boot ; then
+	echo >&2 "/boot directory is missing, FIPS mode cannot be $(enable2txt $enable_fips)."
+	echo >&2 "If you want to configure the bootloader manually, re-run with --no-bootcfg."
+	exit 1
+fi
+
+if test "$boot_config" = 1 && test -z "$(ls -A /boot)" ; then
+	echo >&2 "/boot directory is empty, FIPS mode cannot be $(enable2txt $enable_fips)."
+	echo >&2 "If you want to configure the bootloader manually, re-run with --no-bootcfg."
+	exit 1
+fi
 
 if test $enable_fips = 1 ; then
 	if test "$initramfs_fips_module" = 0 ; then
 		fips-finish-install --complete
 		if test $? != 0 ; then
-			echo "Installation of FIPS modules could not be completed."
+			echo >&2 "Installation of FIPS modules could not be completed."
 			exit 1
 		fi
 	fi
@@ -189,34 +206,41 @@ else
 	update-crypto-policies --no-reload --set DEFAULT 2>/dev/null
 fi
 
-boot_device="$(df -P /boot | tail -1)"
-echo "$boot_device" | grep -q ' /$' && boot_device='/' || boot_device=$(echo "$boot_device" | cut -d ' ' -f 1)
 
-if test x"$boot_device" = x ; then
-	echo "Boot device not identified, you have to configure the bootloader manually."
-	boot_device_opt=" boot=UUID=<your-boot-device-uuid>"
-	boot_config=0
-else
-        if test "$boot_device" = / ; then
-            boot_device_opt=""
-        else
-            boot_device_opt=" boot=UUID=$(blkid -s UUID -o value $boot_device)"
-        fi
-fi
-
-if test "$boot_config" = 1 && test ! -x "$(command -v grubby)" ; then
-	echo "The grubby command is missing, please configure the bootloader manually."
-	boot_config=0
+boot_device_opt=" boot=UUID=<your-boot-device-uuid>"
+if test "$boot_config" = 1 ; then
+	boot_device="$(stat -c %d:%m /boot)"
+	root_device="$(stat -c %d:%m /)"  # contrary to findmnt, works in chroot
+	if test "$boot_device" = "$root_device"; then
+		# /boot is not separate from /root
+		boot_device_opt=""
+	else
+		# trigger autofs, when boot is mounted with
+		# automount.boot / systemd-gpt-auto-generator(8)
+		if ! pushd /boot >/dev/null; then
+			echo >&2 "WARNING: Could not change into /boot, boot volume UUID auto-detection might fail."
+		fi
+		FINDMNT_UUID='findmnt --first-only -t noautofs --noheadings --output uuid'
+		boot_uuid=$(
+			$FINDMNT_UUID --mountpoint /boot --fstab ||  # priority
+			$FINDMNT_UUID --mountpoint /boot
+		)
+		# This might fail if auto-mounting failed and the pushd failed; we can just ignore it
+		popd >/dev/null || true
+		if test -z "$boot_uuid"; then
+			echo >&2 "Boot device not identified, you have to configure the bootloader manually."
+			boot_config=0
+		else
+			boot_device_opt=" boot=UUID=$boot_uuid"
+		fi
+	fi
 fi
 
 echo "FIPS mode will be $(enable2txt $enable_fips)."
 
 fipsopts="fips=$enable_fips$boot_device_opt"
 
-if test $boot_config = 0 ; then
-	echo "Now you need to configure the bootloader to add kernel options \"$fipsopts\""
-	echo "and reboot the system for the setting to take effect."
-else
+if test "$boot_config" = 1 ; then
 	grubby --update-kernel=ALL --args="$fipsopts"
 	if test x"$(uname -m)" = xs390x; then
 		if command -v zipl >/dev/null; then
@@ -227,6 +251,9 @@ else
 		fi
 	fi
 	echo "Please reboot the system for the setting to take effect."
+else
+	echo "Now you need to configure the bootloader to add kernel options \"$fipsopts\""
+	echo "and reboot the system for the setting to take effect."
 fi
 
 exit 0

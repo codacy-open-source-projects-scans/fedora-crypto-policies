@@ -24,4 +24,4 @@ sha1_in_certs = 0
 
 arbitrary_dh_groups = 0
 ssh_certs = 0
-ssh_etm = 0
+etm@SSH = DISABLE_ETM

@@ -39,7 +39,7 @@ cipher = -AES-*-CCM -AES-128-*
 cipher@!{ssh,tls} = -AES-*-CTR
 
 ssh_certs = 0
-ssh_etm = 0
+etm@ssh = DISABLE_ETM
 
 protocol@TLS = -TLS1.3
 

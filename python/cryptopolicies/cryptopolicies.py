@@ -26,13 +26,14 @@ INT_DEFAULTS = {k: 0 for k in (
     'min_dh_size', 'min_dsa_size', 'min_rsa_size',
     '__openssl_block_sha1_signatures',  # FUTURE/TEST-FEDORA39/NO-SHA1
     'sha1_in_certs',
-    'ssh_certs', 'ssh_etm',
+    'ssh_certs',
 )}
 
 
 # For enum values, first value works as default,
 
 ENUMS = {
+    'etm': ('ANY', 'DISABLE_ETM', 'DISABLE_NON_ETM'),
     '__ems': ('DEFAULT', 'ENFORCE', 'RELAX'),  # FIPS/NO-ENFORCE-EMS
 }
 
@@ -300,11 +301,20 @@ def preprocess_text(text):
             'hash@DNSSec = -SHA1\nsign@DNSSec = -RSA-SHA1 -ECDSA-SHA1',
         'sha1_in_dnssec = 1':
             'hash@DNSSec = SHA1+\nsign@DNSSec = RSA-SHA1+ ECDSA-SHA1+',
+        'ssh_etm = 0': 'etm@SSH = DISABLE_ETM',
+        'ssh_etm = 1': 'etm@SSH = ANY',
+        'ssh_etm@([^= ]+) = 0':
+            'etm@\\1 = DISABLE_ETM',
+        'ssh_etm@([^= ]+) = 1':
+            'etm@\\1 = ANY'
     }
     for fr, to in PLAIN_REPLACEMENTS.items():
         regex = r'\b' + fr + r'\b'
-        if re.search(regex, text):
-            warnings.warn(PolicySyntaxDeprecationWarning(fr, to))
+        matches = {}
+        for match in re.finditer(regex, text):
+            matches[match.group(0)] = re.sub(regex, to, text)
+        for match_fr, match_to in matches.items():
+            warnings.warn(PolicySyntaxDeprecationWarning(match_fr, match_to))
         text = re.sub(regex, to, text)
 
     dtls_versions = list(alg_lists.DTLS_PROTOCOLS[::-1])

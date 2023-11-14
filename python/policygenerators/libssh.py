@@ -115,17 +115,19 @@ class LibsshGenerator(ConfigGenerator):
             cfg += 'Ciphers ' + s + '\n'
 
         s = ''
-        if policy.integers['ssh_etm']:
+
+        if policy.enums['etm'] != 'DISABLE_ETM':
             for i in p['mac']:
                 try:
                     s = cls.append(s, cls.mac_map_etm[i], sep)
                 except KeyError:
                     pass
-        for i in p['mac']:
-            try:
-                s = cls.append(s, cls.mac_map[i], sep)
-            except KeyError:
-                pass
+        if policy.enums['etm'] != 'DISABLE_NON_ETM':
+            for i in p['mac']:
+                try:
+                    s = cls.append(s, cls.mac_map[i], sep)
+                except KeyError:
+                    pass
 
         if s:
             cfg += 'MACs ' + s + '\n'

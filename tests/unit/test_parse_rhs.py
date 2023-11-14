@@ -41,6 +41,14 @@ def test_parse_rhs():
     with pytest.raises(AlgorithmClassUnknownError):
         parse_rhs('0', 'nonex_algo_class')
 
+    assert parse_rhs('DISABLE_ETM', 'etm') == [
+        (Operation.SET_ENUM, 'DISABLE_ETM'),
+    ]
+    with pytest.raises(NonIntPropertyIntValueError):
+        parse_rhs('0', 'etm')
+    with pytest.raises(BadEnumValueError):
+        parse_rhs('INVALID', 'etm')
+
     assert parse_rhs('RELAX', '__ems') == [(Operation.SET_ENUM, 'RELAX')]
     with pytest.raises(NonIntPropertyIntValueError):
         parse_rhs('0', '__ems')

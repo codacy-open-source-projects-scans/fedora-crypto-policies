@@ -76,4 +76,4 @@ sha1_in_certs = 1
 
 arbitrary_dh_groups = 1
 ssh_certs = 1
-ssh_etm = 1
+etm@SSH = ANY
