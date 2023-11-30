@@ -21,7 +21,7 @@ import policygenerators
 
 
 warnings.formatwarning = lambda msg, category, *a, **kwa: \
-    f'{category.__name__}: {str(msg).capitalize()}\n'
+    f'{category.__name__}: {str(msg)[:1].upper() + str(msg)[1:]}\n'
 
 
 DEFAULT_PROFILE_DIR = '/usr/share/crypto-policies'
