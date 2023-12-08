@@ -232,6 +232,8 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'BRAINPOOL-P256R1': 'brainpoolP256r1',
         'BRAINPOOL-P384R1': 'brainpoolP384r1',
         'BRAINPOOL-P512R1': 'brainpoolP512r1',
+        'X25519-KYBER768': 'x25519_kyber768',
+        'P384-KYBER768': 'p384_kyber768',
     }
 
     @classmethod
