@@ -6,7 +6,7 @@ dracut_cfg_d=/etc/dracut.conf.d
 dracut_cfg=$dracut_cfg_d/40-fips.conf
 
 is_ostree_system=0
-if test -f /run/ostree-booted; then
+if test -f /run/ostree-booted -o -d /ostree; then
     is_ostree_system=1
 fi
 

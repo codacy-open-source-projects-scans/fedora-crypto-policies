@@ -10,6 +10,8 @@ Fedora-rawhide:
     git
     which
     gnutls-utils
+    nss-tools
+    sequoia-policy-config
     java-1.8.0-openjdk-devel
     bind
     krb5-devel

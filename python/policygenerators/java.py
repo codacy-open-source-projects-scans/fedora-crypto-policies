@@ -29,7 +29,7 @@ class JavaGenerator(ConfigGenerator):
     cipher_not_map = {
         'AES-256-CTR': '',
         'AES-128-CTR': '',
-        'CHACHA20-POLY1305': '',
+        'CHACHA20-POLY1305': 'ChaCha20-Poly1305',
         'CAMELLIA-256-GCM': '',
         'CAMELLIA-128-GCM': '',
         'CAMELLIA-256-CBC': '',

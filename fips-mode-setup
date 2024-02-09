@@ -10,7 +10,7 @@ err_if_disabled=0
 output_text=1
 
 is_ostree_system=0
-if test -f /run/ostree-booted; then
+if test -f /run/ostree-booted -o -d /ostree; then
     is_ostree_system=1
 fi
 
