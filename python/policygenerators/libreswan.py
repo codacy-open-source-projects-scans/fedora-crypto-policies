@@ -141,13 +141,11 @@ class LibreswanGenerator(ConfigGenerator):
         s = ''
         proto = [x for x in p['protocol'] if x.startswith('IKE')]
         if 'IKEv2' in proto:
-            s = 'ikev2=insist'
+            s = ''
         elif 'IKEv1' in proto:  # and 'IKEv2' not in proto
-            s = 'ikev2=never'
+            s = 'ikev2=never'  # will be keyexchange=ikev1 in librenswan 5.0+
         if s:
             cfg += '\t' + s + '\n'
-
-        cfg += '\tpfs=yes\n'
 
         sorted_macs = sorted(p['mac'],
                              key=cls.__get_ike_prio)
