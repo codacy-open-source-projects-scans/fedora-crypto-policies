@@ -3,12 +3,11 @@
 # Copyright (c) 2019 Red Hat, Inc.
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
-from subprocess import call, CalledProcessError
-from tempfile import mkstemp
-
 import ctypes
 import ctypes.util
 import os
+from subprocess import CalledProcessError, call
+from tempfile import mkstemp
 
 from .configgenerator import ConfigGenerator
 
@@ -211,7 +210,7 @@ class NSSGenerator(ConfigGenerator):
             cls.eprint("There is a warning in NSS generated policy")
             cls.eprint(f'Policy:\n{config}')
             return False
-        elif ret:
+        if ret:
             cls.eprint("There is an error in NSS generated policy")
             cls.eprint(f'Policy:\n{config}')
             return False

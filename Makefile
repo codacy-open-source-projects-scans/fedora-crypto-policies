@@ -40,6 +40,9 @@ install: $(MANPAGES)
 	chmod 755 $(DESTDIR)$(DIR)/python/update-crypto-policies.py
 	chmod 755 $(DESTDIR)$(DIR)/python/build-crypto-policies.py
 
+runruff:
+	ruff check
+
 runflake8:
 	@find -name '*.py' | grep -v krb5check | xargs flake8 --config .flake8
 
@@ -62,10 +65,10 @@ check:
 	python/build-crypto-policies.py --strict --policy DEFAULT:FEDORA32 --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy DEFAULT:TEST-PQ --test --flat policies tests/outputs
 	diff policies/DEFAULT.pol policies/FEDORA38.pol
-	tests/openssl.pl
-	tests/gnutls.pl
+	tests/openssl.py
+	tests/gnutls.py
 	tests/nss.py
-	tests/java.pl
+	tests/java.py
 	tests/krb5.py
 	top_srcdir=. tests/update-crypto-policies.sh
 
@@ -99,7 +102,10 @@ covtest: #doctest unittest
 	coverage run --append --source python/cryptopolicies/ --branch -m pytest -vv tests/unit/ &>/dev/null
 	coverage report --fail-under=100
 
-test: doctest unittest check check-alternatives covtest runcodespell runflake8 runpylint
+test: doctest unittest check check-alternatives
+ifndef SKIP_LINTING
+test: covtest runruff runcodespell runflake8 runpylint
+endif
 
 reset-outputs:
 	@rm -rf tests/outputs/*

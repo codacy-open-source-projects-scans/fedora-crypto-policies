@@ -5,11 +5,10 @@
 #
 # This generator targets GnuTLS with allowlisting support (newer than 3.7.2)
 
-from subprocess import call, CalledProcessError
-from tempfile import mkstemp
-
 import os
 import textwrap
+from subprocess import CalledProcessError, call
+from tempfile import mkstemp
 
 from .configgenerator import ConfigGenerator
 

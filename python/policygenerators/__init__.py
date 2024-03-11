@@ -5,19 +5,18 @@
 
 from .bind import BindGenerator
 from .gnutls import GnuTLSGenerator
-from .java import JavaGenerator
-from .java import JavaSystemGenerator
+from .java import JavaGenerator, JavaSystemGenerator
 from .krb5 import KRB5Generator
 from .libreswan import LibreswanGenerator
 from .libssh import LibsshGenerator
 from .nss import NSSGenerator
-from .openssh import OpenSSHClientGenerator
-from .openssh import OpenSSHServerGenerator
-from .openssl import OpenSSLConfigGenerator
-from .openssl import OpenSSLGenerator
-from .openssl import OpenSSLFIPSGenerator
-from .sequoia import SequoiaGenerator
-from .sequoia import RPMSequoiaGenerator
+from .openssh import OpenSSHClientGenerator, OpenSSHServerGenerator
+from .openssl import (
+    OpenSSLConfigGenerator,
+    OpenSSLFIPSGenerator,
+    OpenSSLGenerator,
+)
+from .sequoia import RPMSequoiaGenerator, SequoiaGenerator
 
 __all__ = [
     'BindGenerator',
@@ -31,8 +30,8 @@ __all__ = [
     'OpenSSHClientGenerator',
     'OpenSSHServerGenerator',
     'OpenSSLConfigGenerator',
-    'OpenSSLGenerator',
     'OpenSSLFIPSGenerator',
-    'SequoiaGenerator',
+    'OpenSSLGenerator',
     'RPMSequoiaGenerator',
+    'SequoiaGenerator',
 ]

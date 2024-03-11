@@ -3,7 +3,7 @@
 # Copyright (c) 2019 Red Hat, Inc.
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
-from subprocess import check_output, CalledProcessError
+from subprocess import CalledProcessError, check_output
 
 from .configgenerator import ConfigGenerator
 
@@ -133,10 +133,8 @@ class OpenSSLGenerator(ConfigGenerator):
         # These ciphers are not necessary for any
         # policy level, and only increase the attack surface.
         # FIXME! must be fixed for custom policies
-        s = cls.append(s, '-SHA384')
-        s = cls.append(s, '-CAMELLIA')
-        s = cls.append(s, '-ARIA')
-        s = cls.append(s, '-AESCCM8')
+        for c in ('-SHA384', '-CAMELLIA', '-ARIA', '-AESCCM8'):
+            s = cls.append(s, c)
 
         return s
 
@@ -159,9 +157,10 @@ class OpenSSLGenerator(ConfigGenerator):
     @classmethod
     def test_config(cls, config):
         output = b''
-        assert config.endswith('\n')
+        assert config.endswith('\n')  # noqa: S101
         try:
-            output = check_output(['openssl', 'ciphers', config[:-1]])
+            output = check_output(['openssl',  # noqa: S607
+                                   'ciphers', config[:-1]])
         except CalledProcessError:
             cls.eprint('There is an error in openssl generated policy')
             cls.eprint(f'Policy:\n{config}')

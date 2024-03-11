@@ -6,12 +6,12 @@ import pytest
 
 from python.cryptopolicies.cryptopolicies import ScopeSelector
 from python.cryptopolicies.validation.scope import (
-    ScopeUnknownError,
-    ScopeSelectorEmptyError,
     ScopeSelectorCommaError,
-    ScopeSelectorMatchedNothingError,
     ScopeSelectorCurlyBracketsError,
+    ScopeSelectorEmptyError,
     ScopeSelectorIllegalCharacterError,
+    ScopeSelectorMatchedNothingError,
+    ScopeUnknownError,
 )
 
 

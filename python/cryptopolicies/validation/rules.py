@@ -5,7 +5,7 @@
 from .general import PolicySyntaxError
 
 
-class MalformedLine(PolicySyntaxError):
+class MalformedLineError(PolicySyntaxError):
     def __init__(self, line):
         super().__init__(f'malformed line `{line}`')
 
@@ -38,9 +38,9 @@ class BadEnumValueError(PolicySyntaxError):
 
 def count_equals_signs(line):
     if line.count('=') != 1:
-        raise MalformedLine(line)
+        raise MalformedLineError(line)
 
 
 def empty_lhs(lhs, line):
     if not lhs:
-        raise MalformedLine(line)
+        raise MalformedLineError(line)

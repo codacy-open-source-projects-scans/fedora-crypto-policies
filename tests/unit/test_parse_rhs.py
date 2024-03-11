@@ -5,15 +5,15 @@
 import pytest
 
 from python.cryptopolicies.cryptopolicies import Operation, parse_rhs
-
 from python.cryptopolicies.validation.alg_lists import (
-    AlgorithmClassUnknownError, AlgorithmEmptyMatchError,
+    AlgorithmClassUnknownError,
+    AlgorithmEmptyMatchError,
 )
 from python.cryptopolicies.validation.rules import (
-    MixedDifferentialNonDifferentialError,
-    IntPropertyNonIntValueError,
-    NonIntPropertyIntValueError,
     BadEnumValueError,
+    IntPropertyNonIntValueError,
+    MixedDifferentialNonDifferentialError,
+    NonIntPropertyIntValueError,
 )
 
 
@@ -23,7 +23,7 @@ def test_parse_rhs():
     assert parse_rhs('IDEA-CBC NULL', 'cipher') == [
         (Operation.RESET, None),
         (Operation.APPEND, 'IDEA-CBC'),
-        (Operation.APPEND, 'NULL')
+        (Operation.APPEND, 'NULL'),
     ]
     with pytest.raises(AlgorithmEmptyMatchError):
         parse_rhs('NULL NONEX', 'cipher')

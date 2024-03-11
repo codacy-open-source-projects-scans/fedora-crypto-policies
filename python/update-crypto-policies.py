@@ -12,15 +12,13 @@ import shutil
 import subprocess
 import sys
 import warnings
-from tempfile import mkstemp, mkdtemp
+from tempfile import mkdtemp, mkstemp
 
 import cryptopolicies
 import cryptopolicies.validation
-
 import policygenerators
 
-
-warnings.formatwarning = lambda msg, category, *a, **kwa: \
+warnings.formatwarning = lambda msg, category, *_unused_a, **_unused_kwa: \
     f'{category.__name__}: {str(msg)[:1].upper() + str(msg)[1:]}\n'
 
 
@@ -86,7 +84,7 @@ def get_walk(path):
 
 
 def parse_args():
-    "Parse the command line"
+    """Parse the command line"""
     parser = argparse.ArgumentParser(allow_abbrev=False)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--set', nargs='?', default='', metavar='POLICY',
@@ -201,10 +199,10 @@ def safe_write(directory, filename, contents):
     os.fchmod(fd, 0o644)
     try:
         os.rename(path, os.path.join(directory, filename))
-    except OSError as e:
+    except OSError:
         os.unlink(path)
         os.close(fd)
-        raise e
+        raise
     finally:
         os.close(fd)
 
@@ -216,9 +214,9 @@ def safe_symlink(directory, filename, target):
     os.symlink(target, path)
     try:
         os.rename(path, os.path.join(directory, filename))
-    except OSError as e:
+    except OSError:
         os.unlink(path)
-        raise e
+        raise
 
 
 # pylint: disable=too-many-arguments
@@ -255,7 +253,7 @@ def save_config(pconfig, cfgname, cfgdata, cfgdir, localdir, profiledir,
             with open(cfgfile, 'a', encoding='utf-8') as cf:
                 for lcfg in local_cfgs:
                     try:
-                        with open(lcfg, 'r', encoding='utf-8') as lf:
+                        with open(lcfg, encoding='utf-8') as lf:
                             local_data = lf.read()
                     except OSError:
                         eprint(f'Cannot read local policy file {lcfg}')
@@ -355,10 +353,9 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
                 eprint("         Use 'fips-mode-setup --disable' "
                        "to disable the system FIPS mode.")
 
-    if base_dir == DEFAULT_BASE_DIR:
-        if not os.geteuid() == 0:
-            eprint("You must be root to run update-crypto-policies.")
-            sys.exit(1)
+    if base_dir == DEFAULT_BASE_DIR and os.geteuid() != 0:
+        eprint("You must be root to run update-crypto-policies.")
+        sys.exit(1)
 
     try:
         cp = cryptopolicies.UnscopedCryptoPolicy(pconfig.policy,
@@ -425,8 +422,7 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
 
 
 def main():
-    "The actual command implementation"
-
+    """The actual command implementation"""
     dir_paths()
 
     cmdline = parse_args()

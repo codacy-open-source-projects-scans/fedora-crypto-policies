@@ -47,7 +47,7 @@ def illegal_characters(p, original_pattern):
 
 
 def curly_brackets(p, original_pattern):
-    if ((p.count('{'), p.count('}')) not in [(0, 0), (1, 1)]
+    if ((p.count('{'), p.count('}')) not in {(0, 0), (1, 1)}
             or p.startswith('{') and not p.endswith('}')
             or not p.startswith('{') and p.endswith('}')):
         raise ScopeSelectorCurlyBracketsError(original_pattern)
@@ -58,7 +58,7 @@ def resulting_globs(globs, all_scopes, original_pattern):
         raise ScopeSelectorCommaError(original_pattern)
     for g in globs:
         if not g:
-            raise ScopeSelectorEmptyError()
+            raise ScopeSelectorEmptyError
         if not fnmatch.filter(all_scopes, g):
             if '*' in g:
                 raise ScopeSelectorMatchedNothingError(g)

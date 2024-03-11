@@ -10,9 +10,10 @@ import os
 import re
 import warnings
 
-from . import alg_lists
-from . import validation  # moved out of the way to not obscure the flow
-
+from . import (
+    alg_lists,
+    validation,  # moved out of the way to not obscure the flow
+)
 
 # Dunder (underscore-prefixed) options are ones
 # we don't advertise for direct usage, specific to a narrow set of policies.
@@ -21,13 +22,13 @@ from . import validation  # moved out of the way to not obscure the flow
 
 # Defaults of integer property values (doubles as an allowlist)
 
-INT_DEFAULTS = {k: 0 for k in (
+INT_DEFAULTS = dict.fromkeys((
     'arbitrary_dh_groups',
     'min_dh_size', 'min_dsa_size', 'min_rsa_size',
     '__openssl_block_sha1_signatures',  # FUTURE/TEST-FEDORA39/NO-SHA1
     'sha1_in_certs',
     'ssh_certs',
-)}
+), 0)
 
 
 # For enum values, first value works as default,
@@ -95,7 +96,7 @@ class ScopeSelector:
                                          original_pattern=self.pattern)
 
     def __str__(self):
-        return f'<ScopeSelector pattern={repr(self.pattern)}>'
+        return f'<ScopeSelector pattern={self.pattern!r}>'
 
     def matches(self, scopes):
         """
@@ -118,9 +119,8 @@ class ScopeSelector:
 # Operations: interpreting right hand sides of (sub)policy files
 
 class Operation(enum.Enum):
-    """
-    An operation that comes with the right-hand value of the directive.
-    """
+    """An operation that comes with the right-hand value of the directive."""
+
     RESET = 1     # cipher =
     PREPEND = 2   # cipher = +NULL
     APPEND = 3    # cipher = NULL+
@@ -151,18 +151,17 @@ def parse_rhs(rhs, prop_name):
     [(Operation.SET_ENUM, 'ENFORCE')]
     """
     def differential(v):
-        return v.startswith('+') or v.endswith('+') or v.startswith('-')
+        return v.startswith(('+', '-')) or v.endswith('+')
 
     if rhs.isdigit():
         if prop_name not in alg_lists.ALL and prop_name in INT_DEFAULTS:
             return [(Operation.SET_INT, int(rhs))]
-        elif prop_name in alg_lists.ALL or prop_name in ENUMS:
+        if prop_name in alg_lists.ALL or prop_name in ENUMS:
             raise validation.rules.NonIntPropertyIntValueError(prop_name)
-        else:
-            assert prop_name not in alg_lists.ALL
-            assert prop_name not in INT_DEFAULTS
-            assert prop_name not in ENUMS
-            # pass for now, it's gonna be caught as non-existing algclass
+        assert prop_name not in alg_lists.ALL
+        assert prop_name not in INT_DEFAULTS
+        assert prop_name not in ENUMS
+        # pass for now, it's gonna be caught as non-existing algclass
     else:
         if prop_name in INT_DEFAULTS:
             raise validation.rules.IntPropertyNonIntValueError(prop_name)
@@ -175,10 +174,10 @@ def parse_rhs(rhs, prop_name):
     values = rhs.split()
 
     if not any(differential(v) for v in values):  # Setting something anew
-        values = sum([alg_lists.glob(v, prop_name) for v in values], [])
+        values = [x for v in values for x in alg_lists.glob(v, prop_name)]
         return ([(Operation.RESET, None)]
                 + [(Operation.APPEND, v) for v in values])
-    elif all(differential(v) for v in values):  # Modifying an existing list
+    if all(differential(v) for v in values):  # Modifying an existing list
         operations = []
         for value in values:
             if value.startswith('+'):
@@ -193,14 +192,14 @@ def parse_rhs(rhs, prop_name):
                 unglob = alg_lists.glob(value[1:], prop_name)
             operations.extend([(op, v) for v in unglob])
         return operations
-    else:  # Forbidden to mix them on one line
-        raise validation.rules.MixedDifferentialNonDifferentialError(rhs)
+    # Forbidden to mix them on one line
+    raise validation.rules.MixedDifferentialNonDifferentialError(rhs)
 
 
 # Directives: interpreting lines of (sub)policy files
 
 Directive = collections.namedtuple('Directive', (
-    'prop_name', 'scope', 'operation', 'value'
+    'prop_name', 'scope', 'operation', 'value',
 ))
 
 
@@ -270,10 +269,10 @@ def preprocess_text(text):
     """
     text = re.sub(r'#.*', '', text)
     text = text.replace('=', ' = ')
-    text = '\n'.join((l.strip() for l in text.split('\n')))
+    text = '\n'.join(l.strip() for l in text.split('\n'))
     text = text.replace('\\\n', '')
-    text = '\n'.join((l.strip() for l in text.split('\n')))
-    text = '\n'.join((re.sub(r'\s+', ' ', l) for l in text.split('\n')))
+    text = '\n'.join(l.strip() for l in text.split('\n'))
+    text = '\n'.join(re.sub(r'\s+', ' ', l) for l in text.split('\n'))
     text = re.sub('\n+', '\n', text).strip()
 
     if re.findall(r'\bprotocol\s*=', text):
@@ -306,7 +305,7 @@ def preprocess_text(text):
         'ssh_etm@([^= ]+) = 0':
             'etm@\\1 = DISABLE_ETM',
         'ssh_etm@([^= ]+) = 1':
-            'etm@\\1 = ANY'
+            'etm@\\1 = ANY',
     }
     for fr, to in PLAIN_REPLACEMENTS.items():
         regex = r'\b' + fr + r'\b'
@@ -319,7 +318,7 @@ def preprocess_text(text):
 
     dtls_versions = list(alg_lists.DTLS_PROTOCOLS[::-1])
     while dtls_versions:
-        neg = " ".join(("-" + v for v in dtls_versions[:-1]))
+        neg = " ".join("-" + v for v in dtls_versions[:-1])
         text = re.sub(r'\bmin_dtls_version = ' + dtls_versions[-1] + r'\b',
                       f'protocol@TLS = {neg}' if neg else '', text)
         dtls_versions.pop()
@@ -327,13 +326,11 @@ def preprocess_text(text):
 
     tls_versions = list(alg_lists.TLS_PROTOCOLS[::-1])
     while tls_versions:
-        neg = " ".join(("-" + v for v in tls_versions[:-1]))
+        neg = " ".join("-" + v for v in tls_versions[:-1])
         text = re.sub(r'\bmin_tls_version = ' + tls_versions[-1] + r'\b',
                       f'protocol@TLS = {neg}' if neg else '', text)
         tls_versions.pop()
-    text = re.sub(r'\bmin_tls_version = 0\b', '', text)
-
-    return text
+    return re.sub(r'\bmin_tls_version = 0\b', '', text)
 
 
 # Finally, constructing a policy
@@ -350,6 +347,7 @@ class ScopedPolicy:
     >>> ScopedPolicy(parse_line('min_dh_size=2048')).integers['min_dh_size']
     2048
     """
+
     def __init__(self, directives, relevant_scopes=None):
         relevant_scopes = relevant_scopes or set()
         self.integers = INT_DEFAULTS.copy()
@@ -424,7 +422,7 @@ class UnscopedCryptoPolicy:
 
     def __init__(self, policy_name, *subpolicy_names, policydir=None):
         self.policydir = policydir
-        self.policyname = ':'.join((policy_name,) + subpolicy_names)
+        self.policyname = ':'.join((policy_name, *subpolicy_names))
 
         self.lines = []
 
@@ -459,7 +457,7 @@ class UnscopedCryptoPolicy:
             syntax_check_line(l, warn=True)
         for l in lines:  # crash
             syntax_check_line(l)
-        return sum([parse_line(l) for l in lines], [])
+        return [x for l in lines for x in parse_line(l)]
 
     def __str__(self):
         def fmt(key, value):

@@ -3,10 +3,9 @@
 # Copyright (c) 2019 Red Hat, Inc.
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
-from subprocess import call, CalledProcessError
-from tempfile import mkstemp
-
 import os
+from subprocess import CalledProcessError, call
+from tempfile import mkstemp
 
 from .configgenerator import ConfigGenerator
 

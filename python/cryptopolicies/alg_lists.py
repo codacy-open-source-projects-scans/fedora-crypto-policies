@@ -3,14 +3,11 @@
 # Copyright (c) 2019 Red Hat, Inc.
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
-"""
-Lists of algorithms and globbing among them.
-"""
+"""Lists of algorithms and globbing among them."""
 
 import fnmatch
 
 from . import validation
-
 
 ALL_CIPHERS = (
     'AES-256-GCM', 'AES-256-CCM',

@@ -3,11 +3,10 @@
 # Copyright (c) 2019 Red Hat, Inc.
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
-from tempfile import mkstemp
-
 import os
 import re
 import subprocess
+from tempfile import mkstemp
 
 from .configgenerator import ConfigGenerator
 
@@ -358,7 +357,7 @@ def _min_rsa_size_option():
     min_rsa_size_force = os.getenv('OPENSSH_MIN_RSA_SIZE', MIN_RSA_DEFAULT)
     if min_rsa_size_force == 'none':
         return None
-    elif min_rsa_size_force == 'auto':
+    if min_rsa_size_force == 'auto':
         openssh_version = _openssh_version()
         if openssh_version and openssh_version > (9, 0):
             return 'RequiredRSASize'

@@ -133,11 +133,10 @@ class SequoiaGenerator(ConfigGenerator):
                 cls.eprint('sequoia-policy-config-check returns '
                            f'{r[0]}{" `" + r[1] + "`" if r[1] else ""}')
                 return True
-            else:
-                cls.eprint('There is an error in generated sequoia policy')
-                cls.eprint('sequoia-policy-config-check returns '
-                           f'{r[0]}: `{r[1]}`')
-                cls.eprint(f'Policy:\n{config}')
+            cls.eprint('There is an error in generated sequoia policy')
+            cls.eprint('sequoia-policy-config-check returns '
+                       f'{r[0]}: `{r[1]}`')
+            cls.eprint(f'Policy:\n{config}')
         finally:
             os.unlink(path)
         return False

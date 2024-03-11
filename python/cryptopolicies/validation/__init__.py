@@ -3,9 +3,12 @@
 # Copyright (c) 2021 Red Hat, Inc.
 
 from . import alg_lists, rules, scope
-from .general import PolicySyntaxError, PolicyFileNotFoundError
+from .general import PolicyFileNotFoundError, PolicySyntaxError
 
 __all__ = [
-    'alg_lists', 'rules', 'scope',
-    'PolicySyntaxError', 'PolicyFileNotFoundError'
+    'PolicyFileNotFoundError',
+    'PolicySyntaxError',
+    'alg_lists',
+    'rules',
+    'scope',
 ]

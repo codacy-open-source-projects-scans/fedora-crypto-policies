@@ -6,16 +6,15 @@ import textwrap
 
 import pytest
 
-from python.cryptopolicies.cryptopolicies import (
-    UnscopedCryptoPolicy,
-    PolicySyntaxDeprecationWarning,
-)
 from python.cryptopolicies.alg_lists import glob
-
-from python.cryptopolicies.validation import (
-    PolicySyntaxError, PolicyFileNotFoundError
+from python.cryptopolicies.cryptopolicies import (
+    PolicySyntaxDeprecationWarning,
+    UnscopedCryptoPolicy,
 )
-
+from python.cryptopolicies.validation import (
+    PolicyFileNotFoundError,
+    PolicySyntaxError,
+)
 
 TESTPOL = '''
 # boring policy
@@ -49,15 +48,14 @@ def test_cryptopolicy_not_found():
 
 
 def test_cryptopolicy_smoke_broken(tmpdir):
-    with pytest.raises(PolicySyntaxError):
-        with pytest.warns(PolicySyntaxError):
-            _policy(tmpdir, TESTPOL='a = b = c')
+    with pytest.raises(PolicySyntaxError), pytest.warns(PolicySyntaxError):
+        _policy(tmpdir, TESTPOL='a = b = c')
 
 
 def test_cryptopolicy_smoke_basic(tmpdir):
     cp = _policy(tmpdir, TESTPOL='cipher = AES-*-GCM')
     assert cp.scoped({'tls'}).enabled['cipher'] == [
-        'AES-256-GCM', 'AES-192-GCM', 'AES-128-GCM'
+        'AES-256-GCM', 'AES-192-GCM', 'AES-128-GCM',
     ]
 
 
@@ -66,7 +64,7 @@ def test_cryptopolicy_smoke_subpolicy(tmpdir):
                  TESTPOL='cipher = AES-*-GCM',
                  MINUS192='cipher = -AES-192-*')
     assert cp.scoped({'tls'}).enabled['cipher'] == [
-        'AES-256-GCM', 'AES-128-GCM'
+        'AES-256-GCM', 'AES-128-GCM',
     ]
 
 
@@ -79,7 +77,7 @@ def test_cryptopolicy_smoke_several_subpolicies(tmpdir):
                  APPEND_NULL_TLS='cipher@TLS = NULL+',
                  PREPEND_RC4='cipher = +RC4-128')
     assert cp.scoped({'tls', 'openssl'}).enabled['cipher'] == [
-        'RC4-128', 'AES-256-GCM', 'AES-192-GCM', 'AES-128-GCM', 'NULL'
+        'RC4-128', 'AES-256-GCM', 'AES-192-GCM', 'AES-128-GCM', 'NULL',
     ]
     assert cp.scoped({'ssh', 'openssh'}).enabled['cipher'] == [
         'RC4-128', 'AES-256-GCM',
@@ -163,11 +161,11 @@ def test_cryptopolicy_compat_diamond_breaking2(tmpdir):
                      TESTSUBPOL3='ssh_cipher = +NULL')
     # Used to be ['RC4-128', 'IDEA-CBC', 'NULL']
     assert cp.scoped({'tls', 'openssl'}).enabled['cipher'] == [
-        'IDEA-CBC', 'NULL'
+        'IDEA-CBC', 'NULL',
     ]
     # Used to be ['NULL', 'RC4-128', 'IDEA-CBC']
     assert cp.scoped({'ssh', 'openssh'}).enabled['cipher'] == [
-        'NULL', 'IDEA-CBC'
+        'NULL', 'IDEA-CBC',
     ]
     assert cp.scoped().enabled['cipher'] == ['IDEA-CBC']
 
@@ -190,8 +188,8 @@ def test_cryptopolicy_sha1_in_dnssec(tmpdir):
 def test_cryptopolicy_compat_to_enum(tmpdir):
     with pytest.warns(
             PolicySyntaxDeprecationWarning,
-            match="option ssh_etm = 0 is deprecated, please rewrite your"
-            " rules using etm@SSH = DISABLE_ETM;.*"):
+            match='option ssh_etm = 0 is deprecated, please rewrite your'
+            ' rules using etm@SSH = DISABLE_ETM;.*'):
         cp = _policy(tmpdir, TESTPOL='ssh_etm =  0')
     assert cp.scoped({'tls', 'openssl'}).enums['etm'] == 'ANY'
     assert cp.scoped({'ssh', 'openssh'}).enums['etm'] == 'DISABLE_ETM'
@@ -200,9 +198,9 @@ def test_cryptopolicy_compat_to_enum(tmpdir):
 def test_cryptopolicy_compat_scoped_ssh_etm_to_enum(tmpdir):
     with pytest.warns(
             PolicySyntaxDeprecationWarning,
-            match=r"option ssh_etm@{OpenSSH-server,OpenSSH-client} = 0 is"
-            r" deprecated, please rewrite your rules using"
-            r" etm@{OpenSSH-server,OpenSSH-client} = DISABLE_ETM;.*"):
+            match=r'option ssh_etm@{OpenSSH-server,OpenSSH-client} = 0 is'
+            r' deprecated, please rewrite your rules using'
+            r' etm@{OpenSSH-server,OpenSSH-client} = DISABLE_ETM;.*'):
         cp = _policy(tmpdir,
                      TESTPOL='ssh_etm@{OpenSSH-server,OpenSSH-client} = 0')
     assert cp.scoped({'tls', 'openssl'}).enums['etm'] == 'ANY'
@@ -220,7 +218,7 @@ def test_cryptopolicy_prepend_order(tmpdir):
                  # so that -GCM ends up first and has higher priority
                  SUBPOL1='cipher = +AES-192-*M')
     assert cp.scoped({'tls', 'openssl'}).enabled['cipher'] == [
-        'AES-192-GCM', 'AES-192-CCM', 'NULL'
+        'AES-192-GCM', 'AES-192-CCM', 'NULL',
     ]
 
 
@@ -292,8 +290,6 @@ def test_cryptopolicy_to_string_empty(tmpdir):
         # No scope-specific properties found.
     ''').lstrip()
     cp = _policy(tmpdir, EMPTYPOL='', EMPTYSUBPOL1='\n', EMPTYSUBPOL2='\t')
-    print(repr(reference[:30]))
-    print(repr(str(cp)[:30]))
     assert str(cp) == reference
 
 

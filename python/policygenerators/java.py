@@ -57,7 +57,7 @@ class JavaGenerator(ConfigGenerator):
     }
 
     key_exchange_not_map = {
-        'EXPORT': ', '.join((
+        'EXPORT': ', '.join((  # noqa: FLY002
             'RSA_EXPORT',
             'DHE_DSS_EXPORT',
             'DHE_RSA_EXPORT',
@@ -66,7 +66,7 @@ class JavaGenerator(ConfigGenerator):
         )),
         'DH': 'DH_RSA, DH_DSS',
         'ANON': 'DH_anon, ECDH_anon',
-        'RSA': ', '.join((
+        'RSA': ', '.join((  # noqa: FLY002
             'TLS_RSA_WITH_AES_256_CBC_SHA256',
             'TLS_RSA_WITH_AES_256_CBC_SHA',
             'TLS_RSA_WITH_AES_128_CBC_SHA256',

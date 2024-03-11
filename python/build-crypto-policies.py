@@ -11,9 +11,7 @@ import sys
 import warnings
 
 import cryptopolicies
-
 import policygenerators
-
 
 RELOAD_CMD_NAME = 'reload-cmds.sh'
 
@@ -23,7 +21,7 @@ def eprint(*args, **kwargs):
 
 
 def parse_args():
-    "Parse the command line"
+    """Parse the command line"""
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument('--flat', action='store_true',
                         help='put all the generated files '
@@ -62,7 +60,7 @@ def save_config(cmdline, policy_name, config_name, config):
 
     if cmdline.test:
         try:
-            with open(path, mode='r', encoding='utf-8') as f:
+            with open(path, encoding='utf-8') as f:
                 old_config = f.read()
             if old_config != config:
                 eprint(f'Config for {config_name} for policy {policy_name} '
@@ -102,7 +100,7 @@ def build_policy(cmdline, policy_name, subpolicy_names=None):
         gen = cls()
         config = gen.generate_config(cp.scoped(gen.SCOPES))
 
-        if policy_name in ('EMPTY', 'GOST-ONLY') or gen.test_config(config):
+        if policy_name in {'EMPTY', 'GOST-ONLY'} or gen.test_config(config):
             try:
                 name = ':'.join([policy_name, *subpolicy_names])
                 if not save_config(cmdline, name, gen.CONFIG_NAME, config):
@@ -135,7 +133,7 @@ def save_reload_cmds(cmdline):
 
 
 def main():
-    "The actual command implementation"
+    """The actual command implementation"""
     cmdline = parse_args()
     err = 0
 

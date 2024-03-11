@@ -5,10 +5,11 @@
 import pytest
 
 from python.cryptopolicies.cryptopolicies import (
-    Operation, Directive, parse_line
+    Directive,
+    Operation,
+    parse_line,
 )
-
-from python.cryptopolicies.validation.rules import MalformedLine
+from python.cryptopolicies.validation.rules import MalformedLineError
 
 
 def test_parse_line():
@@ -38,11 +39,11 @@ def test_parse_line():
 
 
 def test_parse_bad():
-    with pytest.raises(MalformedLine):
+    with pytest.raises(MalformedLineError):
         parse_line('a = b = c')
-    with pytest.raises(MalformedLine):
+    with pytest.raises(MalformedLineError):
         parse_line('test')
-    with pytest.raises(MalformedLine):
+    with pytest.raises(MalformedLineError):
         parse_line('=4')
-    with pytest.raises(MalformedLine):
+    with pytest.raises(MalformedLineError):
         parse_line('=')

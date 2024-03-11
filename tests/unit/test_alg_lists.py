@@ -5,11 +5,16 @@
 import pytest
 
 from python.cryptopolicies.alg_lists import (
-    glob, ALL,
-    min_tls_version, min_dtls_version, max_tls_version, max_dtls_version,
+    ALL,
+    glob,
+    max_dtls_version,
+    max_tls_version,
+    min_dtls_version,
+    min_tls_version,
 )
 from python.cryptopolicies.validation.alg_lists import (
-    AlgorithmClassUnknownError, AlgorithmEmptyMatchError,
+    AlgorithmClassUnknownError,
+    AlgorithmEmptyMatchError,
 )
 
 

@@ -2,16 +2,14 @@
 
 import ctypes
 import ctypes.util
-import glob
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
-
+from pathlib import Path
 
 if shutil.which('nss-policy-check') is None:
-    print('nss-policy-check not found, skipping check', file=sys.stderr)
+    print('nss-policy-check not found, skipping check')
     sys.exit(0)
 
 
@@ -27,35 +25,28 @@ try:
         # and needs extra switches to be strict.
         nss_is_lax_by_default = False
 except AttributeError:
-    print('Cannot determine nss version with ctypes, assuming >=3.80',
-          file=sys.stderr)
+    print('Cannot determine nss version with ctypes, assuming >=3.80')
 options = (['-f', 'value', '-f', 'identifier']
            if nss_is_lax_by_default and not nss_lax else [])
 
 
 print('Checking the NSS configuration')
 
-for policy_path in glob.glob('tests/outputs/*-nss.txt'):
-    policy = os.path.basename(policy_path)[:-len('-nss.txt')]
+for policy_path in Path('tests', 'outputs').glob('*-nss.txt'):
+    policy = policy_path.name.removesuffix('-nss.txt')
     print(f'Checking policy {policy}')
-    if policy not in ('EMPTY', 'GOST-ONLY'):
-        with open(policy_path, encoding='utf-8') as pf:
-            config = pf.read()
-        with tempfile.NamedTemporaryFile('w', delete=False) as tf:
-            tf.write(config)
-
-        with subprocess.Popen(['nss-policy-check'] + options + [tf.name],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT) as p:
-            output, _ = p.communicate()
-        if p.returncode:
-            print(f'Error in NSS policy for {policy}')
+    if policy not in {'EMPTY', 'GOST-ONLY'}:
+        try:
+            p = subprocess.run(['nss-policy-check',  # noqa: S607
+                                *options, policy_path],
+                               check=True,
+                               encoding='utf-8',
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print(f'Error in NSS policy for {policy}', file=sys.stderr)
             print(f'NSS policy for {policy}:', file=sys.stderr)
-            with open(policy_path, encoding='utf-8') as policy_file:
-                shutil.copyfileobj(policy_file, sys.stderr)
-                sys.stderr.write('\n')
-            print('nss-policy-check error:', file=sys.stderr)
-            print(output.decode(), file=sys.stderr)
-            os.unlink(tf.name)
+            print(policy_path.read_text(encoding='utf-8'), file=sys.stderr)
+            print(f'nss-policy-check error {e.returncode}:', file=sys.stderr)
+            print(e.stdout, file=sys.stderr)
             sys.exit(1)
-        os.unlink(tf.name)
