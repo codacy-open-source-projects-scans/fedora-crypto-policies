@@ -16,6 +16,10 @@ import policygenerators
 RELOAD_CMD_NAME = 'reload-cmds.sh'
 
 
+warnings.formatwarning = lambda msg, category, *_unused_a, **_unused_kwa: \
+    f'{category.__name__}: {str(msg)[:1].upper() + str(msg)[1:]}\n'
+
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 

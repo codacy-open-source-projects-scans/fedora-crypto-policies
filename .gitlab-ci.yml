@@ -12,7 +12,7 @@ Fedora-rawhide:
     gnutls-utils
     nss-tools
     sequoia-policy-config
-    java-1.8.0-openjdk-devel
+    java-devel
     bind
     krb5-devel
     asciidoc
@@ -34,8 +34,6 @@ Fedora-rawhide:
   - make check-alternatives
   - make test
   - make install && make test-install >test-install.log 2>&1 && make test-fips-setup >test-fips-setup.log 2>&1
-  tags:
-  - shared
   except:
   - tags
   artifacts:
@@ -58,8 +56,6 @@ Fedora-rawhide-commit-range:
   - git fetch upstream
   - python3 git-test add 'make test'
   - python3 git-test run --keep-going upstream/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}..HEAD && echo --- && python3 git-test results upstream/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}..HEAD
-  tags:
-  - shared
   except:
   - tags
   artifacts:
@@ -84,7 +80,5 @@ Fedora-rawhide-prebuilt-image-extras:
   - make check
   - make check-alternatives
   - make test
-  tags:
-  - shared
   except:
   - tags

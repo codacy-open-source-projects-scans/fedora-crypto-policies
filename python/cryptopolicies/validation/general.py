@@ -2,7 +2,11 @@
 
 # Copyright (c) 2021 Red Hat, Inc.
 
-class PolicySyntaxError(ValueError, UserWarning):
+class PolicyWarning(UserWarning):
+    pass
+
+
+class PolicySyntaxError(ValueError, PolicyWarning):
     pass
 
 

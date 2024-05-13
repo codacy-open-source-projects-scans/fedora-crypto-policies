@@ -75,6 +75,7 @@ per-file-ignores."python/cryptopolicies/cryptopolicies.py" = [
   "S101",  # Use of `assert` detected
 ]
 per-file-ignores."python/cryptopolicies/alg_lists.py" = [
+  "B028",  # no-explicit-stacklevel
   "D402",  # no-signature
 ]
 per-file-ignores."python/update-crypto-policies.py" = [

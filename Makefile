@@ -62,9 +62,8 @@ check:
 	python/build-crypto-policies.py --strict --policy DEFAULT:GOST --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy GOST-ONLY --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy LEGACY:AD-SUPPORT --test --flat policies tests/outputs
-	python/build-crypto-policies.py --strict --policy DEFAULT:FEDORA32 --test --flat policies tests/outputs
-	python/build-crypto-policies.py --strict --policy DEFAULT:TEST-PQ --test --flat policies tests/outputs
-	diff policies/DEFAULT.pol policies/FEDORA38.pol
+	python/build-crypto-policies.py --strict --policy TEST-FEDORA41 --test --flat policies tests/outputs
+	python/build-crypto-policies.py --policy DEFAULT:TEST-PQ --test --flat policies tests/outputs  # not strict
 	tests/openssl.py
 	tests/gnutls.py
 	tests/nss.py
@@ -84,8 +83,8 @@ check-alternatives: check
 	python/build-crypto-policies.py --policy GOST-ONLY --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy LEGACY:AD-SUPPORT --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy DEFAULT:GOST --test --flat tests/alternative-policies output/alt
-	python/build-crypto-policies.py --policy DEFAULT:FEDORA32 --test --flat tests/alternative-policies output/alt
 	python/build-crypto-policies.py --policy DEFAULT:TEST-PQ --test --flat tests/alternative-policies output/alt
+	python/build-crypto-policies.py --policy TEST-FEDORA41 --test --flat policies output/alt
 	@rm -rf output/alt
 
 doctest:

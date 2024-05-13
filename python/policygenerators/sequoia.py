@@ -117,26 +117,26 @@ class SequoiaGenerator(ConfigGenerator):
             cls.eprint(f'Policy:\n{config}')
             return False
 
-        # check with sequoia-policy-config-check
-        r = subprocess.getstatusoutput('sequoia-policy-config-check /dev/null')
-        if r[0] != 0:
-            cls.eprint('Working sequoia-policy-config not found, skipping...')
-            return True
-
         fd, path = mkstemp()
         try:
             with os.fdopen(fd, 'w') as f:
                 f.write(config)
-            r = subprocess.getstatusoutput('sequoia-policy-config-check '
-                                           f'{path}')
-            if r == (0, ''):
-                cls.eprint('sequoia-policy-config-check returns '
-                           f'{r[0]}{" `" + r[1] + "`" if r[1] else ""}')
+            r = subprocess.run(['sequoia-policy-config-check',  # noqa: S607
+                                path],
+                               check=False,
+                               encoding='utf-8',
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+            cls.eprint('sequoia-policy-config-check returns '
+                       f'{r.returncode}'
+                       f'{" `" + r.stdout + "`" if r.stdout else ""}')
+            if (r.returncode, r.stdout) == (0, ''):
                 return True
             cls.eprint('There is an error in generated sequoia policy')
-            cls.eprint('sequoia-policy-config-check returns '
-                       f'{r[0]}: `{r[1]}`')
             cls.eprint(f'Policy:\n{config}')
+        except FileNotFoundError:
+            cls.eprint('sequoia-policy-config not found, skipping...')
+            return True
         finally:
             os.unlink(path)
         return False

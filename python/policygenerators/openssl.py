@@ -214,6 +214,30 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'RSA-PSS-RSAE-SHA2-512': 'rsa_pss_rsae_sha512',
         'EDDSA-ED25519': 'ed25519',
         'EDDSA-ED448': 'ed448',
+        # provider-only, so, optional (openssl#23050) + marked experimental
+        'P256-DILITHIUM2': '?p256_dilithium2',
+        'P256-FALCON512': '?p256_falcon512',
+        'P256-SPHINCSSHA2128FSIMPLE': '?p256_sphincssha2128fsimple',
+        'P256-SPHINCSSHA2128SSIMPLE': '?p256_sphincssha2128ssimple',
+        'P256-SPHINCSSHAKE128FSIMPLE': '?p256_sphincsshake128fsimple',
+        'P521-DILITHIUM5': '?p521_dilithium5',
+        'P521-FALCON1024': '?p521_falcon1024',
+        'P384-DILITHIUM3': '?p384_dilithium3',
+        'P384-SPHINCSSHA2192FSIMPLE': '?p384_sphincssha2192fsimple',
+        'RSA3072-DILITHIUM2': '?rsa3072_dilithium2',
+        'RSA3072-FALCON512': '?rsa3072_falcon512',
+        'RSA3072-SPHINCSSHA2128FSIMPLE': '?rsa3072_sphincssha2128fsimple',
+        'RSA3072-SPHINCSSHA2128SSIMPLE': '?rsa3072_sphincssha2128ssimple',
+        'RSA3072-SPHINCSSHAKE128FSIMPLE': '?rsa3072_sphincsshake128fsimple',
+        'DILITHIUM2': '?dilithium2',
+        'DILITHIUM3': '?dilithium3',
+        'DILITHIUM5': '?dilithium5',
+        'FALCON512': '?falcon512',
+        'FALCON1024': '?falcon1024',
+        'SPHINCSSHA2128FSIMPLE': '?sphincssha2128fsimple',
+        'SPHINCSSHA2128SSIMPLE': '?sphincssha2128ssimple',
+        'SPHINCSSHA2192FSIMPLE': '?sphincssha2192fsimple',
+        'SPHINCSSHAKE128FSIMPLE': '?sphincsshake128fsimple',
     }
 
     group_map = {
@@ -231,8 +255,18 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'BRAINPOOL-P256R1': 'brainpoolP256r1',
         'BRAINPOOL-P384R1': 'brainpoolP384r1',
         'BRAINPOOL-P512R1': 'brainpoolP512r1',
-        'X25519-KYBER768': 'x25519_kyber768',
-        'P384-KYBER768': 'p384_kyber768',
+        # provider-only, so, optional (openssl#23050)
+        'X25519-KYBER768': '?x25519_kyber768',
+        'P384-KYBER768': '?p384_kyber768',
+        # optional and marked experimental:
+        'P521-KYBER1024': '?p521_kyber1024',
+        'P256-KYBER768': '?p256_kyber768',
+        'X448-KYBER768': '?x448_kyber768',
+        'X25519-KYBER512': '?x25519_kyber512',
+        'P256-KYBER512': '?p256_kyber512',
+        'KYBER1024': '?kyber1024',
+        'KYBER768': '?kyber768',
+        'KYBER512': '?kyber512',
     }
 
     @classmethod

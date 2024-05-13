@@ -15,6 +15,7 @@ from python.cryptopolicies.validation import (
     PolicyFileNotFoundError,
     PolicySyntaxError,
 )
+from python.cryptopolicies.validation.alg_lists import ExperimentalValueWarning
 
 TESTPOL = '''
 # boring policy
@@ -261,6 +262,14 @@ def test_cryptopolicy_maxver(tmpdir):
     assert tls_cp.max_dtls_version == 'DTLS1.2'
     assert tls_cp.min_tls_version is None
     assert tls_cp.max_tls_version is None
+
+
+def test_cryptopolicy_experimental(tmpdir):
+    plural = 'values `KYBER1024`, `KYBER768`, `KYBER512` are experimental'
+    with pytest.warns(ExperimentalValueWarning, match=plural):
+        cp = _policy(tmpdir, TESTPOL='group = +KYBER*\ngroup = -KYBER*')
+    tls_cp = cp.scoped({'tls', 'openssl'})
+    assert tls_cp.enabled['group'] == []
 
 
 def test_cryptopolicy_to_string_empty(tmpdir):

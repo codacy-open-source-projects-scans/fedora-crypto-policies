@@ -2,7 +2,7 @@
 
 # Copyright (c) 2021 Red Hat, Inc.
 
-from .general import PolicySyntaxError
+from .general import PolicySyntaxError, PolicyWarning
 
 
 class AlgorithmClassSyntaxError(PolicySyntaxError):
@@ -20,3 +20,14 @@ class AlgorithmEmptyMatchError(AlgorithmClassSyntaxError):
         # The wording follows the previous versions
         super().__init__(f'Bad value of policy property `{alg_class}`: '
                          f'`{glob}`')
+
+
+class ExperimentalValueWarning(PolicyWarning):
+    def __init__(self, alg_class, values):
+        msg = f'`{alg_class}` '
+        if len(values) == 1:
+            msg += f'value `{values[0]}` is '
+        else:
+            msg += f'values {", ".join(f"`{value}`" for value in values)} are '
+        msg += 'experimental and might go away in the future'
+        super().__init__(msg)

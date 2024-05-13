@@ -15,6 +15,7 @@ from python.cryptopolicies.alg_lists import (
 from python.cryptopolicies.validation.alg_lists import (
     AlgorithmClassUnknownError,
     AlgorithmEmptyMatchError,
+    ExperimentalValueWarning,
 )
 
 
@@ -28,6 +29,21 @@ def test_glob_alg_globbing():
     gs = glob('GOST*', 'cipher')
     assert gs
     assert all(g.startswith('GOST') for g in gs)
+
+
+def test_glob_experimental(recwarn):
+    gs = glob('X25519', 'group')
+    assert not recwarn
+
+    plural = 'values `KYBER1024`, `KYBER768`, `KYBER512` are experimental'
+    with pytest.warns(ExperimentalValueWarning, match=plural):
+        gs = glob('KYBER*', 'group')
+    assert gs == ['KYBER1024', 'KYBER768', 'KYBER512']
+
+    singular = 'value `KYBER768` is experimental'
+    with pytest.warns(ExperimentalValueWarning, match=singular):
+        gs = glob('KYBER768', 'group')
+    assert gs == ['KYBER768']
 
 
 def test_glob_alg_algorithm_empty():

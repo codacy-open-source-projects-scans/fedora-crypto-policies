@@ -6,6 +6,7 @@
 """Lists of algorithms and globbing among them."""
 
 import fnmatch
+import warnings
 
 from . import validation
 
@@ -50,6 +51,11 @@ ALL_HASHES = (
 )
 
 # we disable curves <= 256 bits by default in Fedora
+EXPERIMENTAL_GROUPS = (
+    'P521-KYBER1024', 'P256-KYBER768', 'X448-KYBER768',
+    'X25519-KYBER512', 'P256-KYBER512',
+    'KYBER1024', 'KYBER768', 'KYBER512',
+)
 ALL_GROUPS = (
     'X25519', 'SECP256R1', 'SECP384R1', 'SECP521R1', 'X448',
     'FFDHE-1536', 'FFDHE-2048', 'FFDHE-3072', 'FFDHE-4096',
@@ -58,8 +64,24 @@ ALL_GROUPS = (
     'GOST-GC512A', 'GOST-GC512B', 'GOST-GC512C',
     'BRAINPOOL-P256R1', 'BRAINPOOL-P384R1', 'BRAINPOOL-P512R1',
     'X25519-KYBER768', 'P384-KYBER768',
+    *EXPERIMENTAL_GROUPS,
 )
 
+EXPERIMENTAL_SIGN = (
+    'P256-DILITHIUM2', 'P256-FALCON512',
+    'P256-SPHINCSSHA2128FSIMPLE', 'P256-SPHINCSSHA2128SSIMPLE',
+    'P256-SPHINCSSHAKE128FSIMPLE',
+    'P521-DILITHIUM5', 'P521-FALCON1024', 'P384-DILITHIUM3',
+    'P384-SPHINCSSHA2192FSIMPLE',
+    'RSA3072-DILITHIUM2', 'RSA3072-FALCON512',
+    'RSA3072-SPHINCSSHA2128FSIMPLE', 'RSA3072-SPHINCSSHA2128SSIMPLE',
+    'RSA3072-SPHINCSSHAKE128FSIMPLE',
+    'DILITHIUM2', 'DILITHIUM3', 'DILITHIUM5',
+    'FALCON512',
+    'FALCON1024',
+    'SPHINCSSHA2128FSIMPLE', 'SPHINCSSHA2128SSIMPLE',
+    'SPHINCSSHA2192FSIMPLE', 'SPHINCSSHAKE128FSIMPLE',
+)
 ALL_SIGN = (
     'RSA-MD5', 'RSA-SHA1', 'DSA-SHA1', 'ECDSA-SHA1',
     'RSA-SHA2-224', 'DSA-SHA2-224', 'ECDSA-SHA2-224',
@@ -81,6 +103,7 @@ ALL_SIGN = (
     'RSA-PSS-RSAE-SHA3-256', 'RSA-PSS-RSAE-SHA3-384',
     'RSA-PSS-RSAE-SHA3-512',
     'GOSTR341012-512', 'GOSTR341012-256', 'GOSTR341001',
+    *EXPERIMENTAL_SIGN,
 )
 
 ALL_KEY_EXCHANGES = (
@@ -109,6 +132,11 @@ ALL = {
     'sign': ALL_SIGN,
 }
 
+EXPERIMENTAL = {
+    'group': EXPERIMENTAL_GROUPS,
+    'sign': EXPERIMENTAL_SIGN,
+}
+
 
 def glob(pattern, alg_class):
     """
@@ -121,6 +149,14 @@ def glob(pattern, alg_class):
         raise validation.alg_lists.AlgorithmClassUnknownError(alg_class)
 
     r = fnmatch.filter(ALL[alg_class], pattern)
+
+    if alg_class in EXPERIMENTAL:
+        experimental_values = [v for v in r if v in EXPERIMENTAL[alg_class]]
+        if experimental_values:
+            warnings.warn(validation.alg_lists.ExperimentalValueWarning(
+                alg_class, experimental_values,
+            ))
+
     if not r:
         raise validation.alg_lists.AlgorithmEmptyMatchError(pattern, alg_class)
     return r

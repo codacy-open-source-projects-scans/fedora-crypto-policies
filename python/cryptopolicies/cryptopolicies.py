@@ -243,7 +243,7 @@ def syntax_check_line(line, warn=False):
         warnings.warn(ex)
 
 
-class PolicySyntaxDeprecationWarning(FutureWarning):
+class PolicySyntaxDeprecationWarning(FutureWarning, validation.PolicyWarning):
     def __init__(self, deprecated, replacement):
         replacement = replacement.replace('\n', ' and ')
         msg = f'option {deprecated} is deprecated'
