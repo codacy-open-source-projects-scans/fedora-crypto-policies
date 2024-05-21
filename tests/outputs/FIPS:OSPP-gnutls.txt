@@ -61,8 +61,8 @@ tls-enabled-kx = ECDHE-ECDSA
 tls-enabled-kx = DHE-RSA
 enabled-version = TLS1.2
 enabled-version = DTLS1.2
+tls-session-hash = require
 min-verification-profile = high
-
 
 [priorities]
 SYSTEM=NONE

@@ -131,6 +131,5 @@ enabled-version = DTLS1.2
 enabled-version = DTLS1.0
 min-verification-profile = low
 
-
 [priorities]
 SYSTEM=NONE

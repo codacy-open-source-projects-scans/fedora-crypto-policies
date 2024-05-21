@@ -101,6 +101,5 @@ enabled-version = TLS1.2
 enabled-version = DTLS1.2
 min-verification-profile = medium
 
-
 [priorities]
 SYSTEM=NONE

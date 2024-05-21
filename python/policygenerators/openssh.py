@@ -212,9 +212,7 @@ class OpenSSHGenerator(ConfigGenerator):
             cfg += f'CASignatureAlgorithms {s}\n'
 
         if policy.integers['min_rsa_size'] > 0:
-            min_rsa_optname = _min_rsa_size_option()
-            if min_rsa_optname is not None:
-                cfg += f"{min_rsa_optname} {policy.integers['min_rsa_size']}\n"
+            cfg += f"RequiredRSASize {policy.integers['min_rsa_size']}\n"
 
         return cfg
 
@@ -237,9 +235,6 @@ class OpenSSHClientGenerator(OpenSSHGenerator):
             return True
         if not os.access('/usr/bin/ssh', os.X_OK):
             return True
-
-        if os.getenv('OPENSSH_MIN_RSA_SIZE_FORCE') == '1':
-            config = re.sub(f'{_min_rsa_size_option()}.*', '', config)
 
         fd, path = mkstemp()
 
@@ -310,9 +305,6 @@ class OpenSSHServerGenerator(OpenSSHGenerator):
         if not os.access('/usr/sbin/sshd', os.X_OK):
             return True
 
-        if os.getenv('OPENSSH_MIN_RSA_SIZE_FORCE') == '1':
-            config = re.sub(f'{_min_rsa_size_option()}.*', '', config)
-
         host_key_filename = cls._test_setup()
         if not host_key_filename:
             return False
@@ -350,16 +342,3 @@ def _openssh_version():
     except (FileNotFoundError, PermissionError):
         return None
     return None
-
-
-def _min_rsa_size_option():
-    MIN_RSA_DEFAULT = 'auto'
-    min_rsa_size_force = os.getenv('OPENSSH_MIN_RSA_SIZE', MIN_RSA_DEFAULT)
-    if min_rsa_size_force == 'none':
-        return None
-    if min_rsa_size_force == 'auto':
-        openssh_version = _openssh_version()
-        if openssh_version and openssh_version > (9, 0):
-            return 'RequiredRSASize'
-        return None
-    return min_rsa_size_force

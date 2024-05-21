@@ -82,8 +82,8 @@ tls-enabled-kx = DHE-RSA
 enabled-version = TLS1.3
 enabled-version = TLS1.2
 enabled-version = DTLS1.2
+tls-session-hash = request
 min-verification-profile = medium
-
 
 [priorities]
 SYSTEM=NONE

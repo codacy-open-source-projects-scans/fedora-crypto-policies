@@ -155,15 +155,7 @@ class GnuTLSGenerator(ConfigGenerator):
         'TLS1.1': 'TLS1.1',
         'TLS1.2': 'TLS1.2',
         'TLS1.3': 'TLS1.3',
-
-        # DTLS 0.9 is excluded specifically due to the fact that
-        # gnutls hard-disables algorithms in F35
-        # and openconnect is left with no sensible way to re-enable it.
-        # this should be addressed with soft-disabling in F36
-        # Luckily, it's not in NORMAL so it won't be on by default.
-
-        # 'DTLS0.9': 'DTLS0.9',
-
+        'DTLS0.9': 'DTLS0.9',
         'DTLS1.0': 'DTLS1.0',
         'DTLS1.2': 'DTLS1.2'
     }
@@ -244,16 +236,12 @@ class GnuTLSGenerator(ConfigGenerator):
                 s += f'enabled-version = {cls.protocol_map[i]}\n'
 
         # option not in Fedora yet, default to True
-        no_tls_session_hash = (
-            os.getenv('GNUTLS_NO_TLS_SESSION_HASH', '1') == '1'
-        )
-        if not no_tls_session_hash:
-            if policy.enums['__ems'] == 'ENFORCE':
-                s += 'tls-session-hash = require\n'
-            elif policy.enums['__ems'] == 'RELAX':
-                s += 'tls-session-hash = request\n'
-            elif policy.enums['__ems'] == 'DEFAULT':
-                pass  # let the library determine a fitting default
+        if policy.enums['__ems'] == 'ENFORCE':
+            s += 'tls-session-hash = require\n'
+        elif policy.enums['__ems'] == 'RELAX':
+            s += 'tls-session-hash = request\n'
+        elif policy.enums['__ems'] == 'DEFAULT':
+            pass  # let the library determine a fitting default
 
         # We cannot separate RSA strength from DH params.
         min_dh_size = policy.integers['min_dh_size']
@@ -271,7 +259,7 @@ class GnuTLSGenerator(ConfigGenerator):
         else:
             s += 'min-verification-profile = future'
 
-        s += '\n\n\n[priorities]\nSYSTEM=NONE\n'
+        s += '\n\n[priorities]\nSYSTEM=NONE\n'
 
         return s
 

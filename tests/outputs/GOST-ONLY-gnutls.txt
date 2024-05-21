@@ -9,6 +9,5 @@ enabled-version = TLS1.1
 enabled-version = TLS1.0
 min-verification-profile = medium
 
-
 [priorities]
 SYSTEM=NONE
