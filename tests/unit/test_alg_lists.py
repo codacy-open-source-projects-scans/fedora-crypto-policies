@@ -32,18 +32,18 @@ def test_glob_alg_globbing():
 
 
 def test_glob_experimental(recwarn):
-    gs = glob('X25519', 'group')
+    gs = glob('RSA-SHA2-384', 'sign')
     assert not recwarn
 
-    plural = 'values `KYBER1024`, `KYBER768`, `KYBER512` are experimental'
+    plural = 'values `MLDSA87-P384`, `MLDSA87-BP384` are experimental'
     with pytest.warns(ExperimentalValueWarning, match=plural):
-        gs = glob('KYBER*', 'group')
-    assert gs == ['KYBER1024', 'KYBER768', 'KYBER512']
+        gs = glob('MLDSA*P384', 'sign')
+    assert gs == ['MLDSA87-P384', 'MLDSA87-BP384']
 
-    singular = 'value `KYBER768` is experimental'
+    singular = 'value `MLDSA87-P384` is experimental'
     with pytest.warns(ExperimentalValueWarning, match=singular):
-        gs = glob('KYBER768', 'group')
-    assert gs == ['KYBER768']
+        gs = glob('MLDSA87-P384', 'sign')
+    assert gs == ['MLDSA87-P384']
 
 
 def test_glob_alg_algorithm_empty():

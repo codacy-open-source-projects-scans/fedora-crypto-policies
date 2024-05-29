@@ -265,9 +265,10 @@ def test_cryptopolicy_maxver(tmpdir):
 
 
 def test_cryptopolicy_experimental(tmpdir):
-    plural = 'values `KYBER1024`, `KYBER768`, `KYBER512` are experimental'
+    plural = 'values `P384-MLKEM768`, `P256-MLKEM768` are experimental'
     with pytest.warns(ExperimentalValueWarning, match=plural):
-        cp = _policy(tmpdir, TESTPOL='group = +KYBER*\ngroup = -KYBER*')
+        cp = _policy(tmpdir,
+                     TESTPOL='group = +P*-MLKEM768\ngroup = -P*-MLKEM768')
     tls_cp = cp.scoped({'tls', 'openssl'})
     assert tls_cp.enabled['group'] == []
 

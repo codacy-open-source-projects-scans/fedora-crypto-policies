@@ -11,6 +11,11 @@ from tempfile import mkstemp
 
 from .configgenerator import ConfigGenerator
 
+NSS_P11_KIT_PROXY = '''
+library=p11-kit-proxy.so
+name=p11-kit-proxy
+'''
+
 
 class NSSGenerator(ConfigGenerator):
     CONFIG_NAME = 'nss'
@@ -103,7 +108,10 @@ class NSSGenerator(ConfigGenerator):
     def generate_config(cls, policy):
         p = policy.enabled
 
-        cfg = 'library=\n'
+        # including it unconditionally, because Fedora NSS depends on p11-kit
+        cfg = NSS_P11_KIT_PROXY.lstrip() + '\n\n'
+
+        cfg += 'library=\n'
         cfg += 'name=Policy\n'
         cfg += 'NSS=flags=policyOnly,moduleDB\n'
         cfg += 'config="disallow=ALL allow='
@@ -169,7 +177,8 @@ class NSSGenerator(ConfigGenerator):
         s = cls.append(s, 'DSA-MIN=' + str(policy.integers['min_dsa_size']))
         s = cls.append(s, 'RSA-MIN=' + str(policy.integers['min_rsa_size']))
 
-        cfg += s + '"\n\n\n'
+        cfg += s + '"\n'
+
         return cfg
 
     @classmethod

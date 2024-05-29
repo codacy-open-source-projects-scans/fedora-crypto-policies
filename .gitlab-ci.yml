@@ -7,7 +7,7 @@ Fedora-rawhide:
     openssh-clients
     openssh-server
     openssl
-    git
+    git-core
     which
     gnutls-utils
     nss-tools
