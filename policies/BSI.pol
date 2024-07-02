@@ -70,8 +70,7 @@ protocol@IKE = IKEv2
 # BSI TR 02102-2 / revision 2023.1: 3k recommended (actually BSI refers to 3000, but lets make it a 2 exponent)
 min_dh_size = 3072
 min_dsa_size = 3072
-# BSI TR 02102-2 / revision 2023.1: RSA 2k still allowed until end of 2023, after that 3k.
-min_rsa_size = 2048
+min_rsa_size = 3072
 
 # GnuTLS only for now
 sha1_in_certs = 0

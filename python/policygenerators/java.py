@@ -48,7 +48,7 @@ class JavaGenerator(ConfigGenerator):
         '3DES-CBC': '3DES_EDE_CBC',
         'SEED-CBC': '',
         'IDEA-CBC': '',
-        'NULL': ''
+        'NULL': 'anon, NULL'
     }
 
     cipher_legacy_map = {
@@ -85,11 +85,29 @@ class JavaGenerator(ConfigGenerator):
     }
 
     sign_not_map = {
-        # we handle signature algorithms via disabled hashes
-        'DSA-SHA1': 'DSA',
-        'RSA-SHA1': '',
-        'ECDSA-SHA1': '',
-        'RSA-MD5': ''
+        'RSA-MD5': 'MD5withRSA',
+        'RSA-SHA1': 'SHA1withRSA',
+        'DSA-SHA1': 'SHA1withDSA',
+        'ECDSA-SHA1': 'SHA1withECDSA',
+        'RSA-SHA2-224': 'SHA224withRSA',
+        'DSA-SHA2-224': 'SHA224withDSA',
+        'ECDSA-SHA2-224': 'SHA224withECDSA',
+        'RSA-SHA2-256': 'SHA256withRSA',
+        'DSA-SHA2-256': 'SHA256withDSA',
+        'ECDSA-SHA2-256': 'SHA256withECDSA',
+        'RSA-SHA2-384': 'SHA384withRSA',
+        'DSA-SHA2-384': 'SHA384withDSA',
+        'ECDSA-SHA2-384': 'SHA384withECDSA',
+        'RSA-SHA2-512': 'SHA512withRSA',
+        'DSA-SHA2-512': 'SHA512withDSA',
+        'ECDSA-SHA2-512': 'SHA512withECDSA',
+        'EDDSA-ED25519': 'Ed25519',
+        'EDDSA-ED448': 'Ed448',
+        'RSA-PSS-SHA1': 'SHA1withRSAandMGF1',
+        'RSA-PSS-SHA2-224': 'SHA224withRSAandMGF1',
+        'RSA-PSS-SHA2-256': 'SHA256withRSAandMGF1',
+        'RSA-PSS-SHA2-384': 'SHA384withRSAandMGF1',
+        'RSA-PSS-SHA2-512': 'SHA512withRSAandMGF1',
     }
 
     protocol_not_map = {
@@ -98,7 +116,7 @@ class JavaGenerator(ConfigGenerator):
         'TLS1.0': 'TLSv1',
         'TLS1.1': 'TLSv1.1',
         'TLS1.2': 'TLSv1.2',
-        'DTLS1.0': '',
+        'DTLS1.0': 'DTLSv1.0',
         'DTLS1.2': ''
     }
 
@@ -117,70 +135,74 @@ class JavaGenerator(ConfigGenerator):
         ip = policy.disabled
         sep = ', '
 
-        cfg = 'jdk.certpath.disabledAlgorithms='
-
-        s = ''
-        s = cls.append(s, 'MD2', sep)
-        for i in ip['hash']:
-            try:
-                s = cls.append(s, cls.hash_not_map[i], sep)
-            except KeyError:
-                pass
+        shared = [  # unconditionally disabled
+            'MD2', 'MD5withDSA', 'MD5withECDSA'
+            'RIPEMD160withRSA', 'RIPEMD160withECDSA',
+            'RIPEMD160withRSAandMGF1',
+        ]
 
         for i in ip['sign']:
             try:
-                s = cls.append(s, cls.sign_not_map[i], sep)
+                shared.append(cls.sign_not_map[i])
             except KeyError:
                 pass
 
-        s = cls.append(s, f'RSA keySize < {policy.integers["min_rsa_size"]}',
-                       sep)
-        cfg += s
+        def keysize(keyword, size):
+            return f'{keyword} keySize < {size}' if size else keyword
 
-        cfg += '\njdk.tls.disabledAlgorithms='
+        shared.append(keysize('RSA', policy.integers['min_rsa_size']))
+        shared.append(keysize('DSA', policy.integers['min_dsa_size']))
+        shared.append(keysize('DH', policy.integers['min_dh_size']))
 
-        s = ''
-        s = cls.append(s, f'DH keySize < {policy.integers["min_dh_size"]}',
-                       sep)
+        # this unconditional measure is mostly because
+        # jdk.tls.namedGroups, an allowlisting and, all around,
+        # a mighty more preferable property,
+        # is a system property that might not be picked up
+        shared.append('EC keySize < 256')
+
+        cfg = f'jdk.certpath.disabledAlgorithms={", ".join(shared)}'
+
+        for i in ip['hash']:
+            try:
+                cfg = cls.append(cfg, cls.hash_not_map[i], sep)
+            except KeyError:
+                pass
+
+        cfg += f'\njdk.tls.disabledAlgorithms={", ".join(shared)}'
 
         for i in ip['protocol']:
             try:
-                s = cls.append(s, cls.protocol_not_map[i], sep)
+                cfg = cls.append(cfg, cls.protocol_not_map[i], sep)
             except KeyError:
                 pass
 
         for i in ip['key_exchange']:
             try:
-                s = cls.append(s, cls.key_exchange_not_map[i], sep)
+                cfg = cls.append(cfg, cls.key_exchange_not_map[i], sep)
             except KeyError:
                 pass
 
         for i in ip['cipher']:
             try:
-                s = cls.append(s, cls.cipher_not_map[i], sep)
+                cfg = cls.append(cfg, cls.cipher_not_map[i], sep)
             except KeyError:
                 pass
 
         for i in ip['mac']:
             try:
-                s = cls.append(s, cls.mac_not_map[i], sep)
+                cfg = cls.append(cfg, cls.mac_not_map[i], sep)
             except KeyError:
                 pass
 
-        cfg += s
-
         cfg += '\njdk.tls.legacyAlgorithms='
-
         s = ''
         for i in p['cipher']:
             try:
                 s = cls.append(s, cls.cipher_legacy_map[i], sep)
             except KeyError:
                 pass
+        cfg += f'{s}\n'
 
-        cfg += s
-
-        cfg += '\n'
         return cfg
 
     @classmethod
@@ -192,9 +214,36 @@ class JavaSystemGenerator(ConfigGenerator):
     CONFIG_NAME = 'javasystem'
     SCOPES = {'tls', 'ssl', 'java-tls'}
 
+    group_map = {
+        'X25519': 'x25519',
+        'SECP256R1': 'secp256r1',
+        'SECP384R1': 'secp384r1',
+        'SECP521R1': 'secp521r1',
+        'X448': 'x448',
+        'FFDHE-2048': 'ffdhe2048',
+        'FFDHE-3072': 'ffdhe3072',
+        'FFDHE-4096': 'ffdhe4096',
+        'FFDHE-6144': 'ffdhe6144',
+        'FFDHE-8192': 'ffdhe8192',
+    }
+
     @classmethod
     def generate_config(cls, policy):
-        return f'jdk.tls.ephemeralDHKeySize={policy.integers["min_dh_size"]}\n'
+        p = policy.enabled
+        sep = ', '
+        cfg = ''
+
+        cfg += f'jdk.tls.ephemeralDHKeySize={policy.integers["min_dh_size"]}\n'
+
+        s = ''
+        for i in p['group']:
+            try:
+                s = cls.append(s, cls.group_map[i], sep)
+            except KeyError:
+                pass
+        cfg += f'jdk.tls.namedGroups={s}\n'
+
+        return cfg
 
     @classmethod
     def test_config(cls, config):  # pylint: disable=unused-argument
