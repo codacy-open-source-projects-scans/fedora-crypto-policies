@@ -51,7 +51,7 @@ class NSSGenerator(ConfigGenerator):
         'SECP256R1': 'SECP256R1',
         'SECP384R1': 'SECP384R1',
         'SECP521R1': 'SECP521R1',
-        'KYBER768': 'XYBER768D00',
+        'X25519-KYBER768': 'XYBER768D00',
     }
 
     cipher_map = {

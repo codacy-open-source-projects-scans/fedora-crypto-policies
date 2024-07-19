@@ -5,7 +5,7 @@
 
 from .bind import BindGenerator
 from .gnutls import GnuTLSGenerator
-from .java import JavaGenerator, JavaSystemGenerator
+from .java import JavaGenerator
 from .krb5 import KRB5Generator
 from .libreswan import LibreswanGenerator
 from .libssh import LibsshGenerator
@@ -22,7 +22,6 @@ __all__ = [
     'BindGenerator',
     'GnuTLSGenerator',
     'JavaGenerator',
-    'JavaSystemGenerator',
     'KRB5Generator',
     'LibreswanGenerator',
     'LibsshGenerator',

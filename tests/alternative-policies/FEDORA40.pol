@@ -83,6 +83,3 @@ ssh_etm = 1
 sign@rpm-sequoia = DSA-SHA1+
 hash@rpm-sequoia = SHA1+
 min_dsa_size@rpm-sequoia = 1024
-
-# https://fedoraproject.org/wiki/Changes/OpenSSLDistrustSHA1SigVer
-__openssl_block_sha1_signatures = 1

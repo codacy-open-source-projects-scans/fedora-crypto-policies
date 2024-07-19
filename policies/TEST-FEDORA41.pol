@@ -1,6 +1,17 @@
-# An experimental policy to help test
-# https://fedoraproject.org/wiki/Changes/OpenSSLDistrustSHA1SigVer
-# May go away in the future.
+# A reasonable default for today's standards. It should provide
+# 112-bit security with the exception of SHA1 signatures in DNSSec.
+# SHA1 is allowed in HMAC where collision attacks do not matter.
+# OpenSSL distrusts signatures using SHA-1 (Changes/OpenSSLDistrustSHA1SigVer).
+
+# MACs: all HMAC with SHA1 or better + all modern MACs (Poly1305 etc)
+# Curves: all prime >= 255 bits (including Bernstein curves)
+# Signature algorithms: with SHA-256 hash or better (no DSA)
+# TLS Ciphers: >= 128-bit key, >= 128-bit block (AES, ChaCha20, including AES-CBC)
+# non-TLS Ciphers: as TLS Ciphers with added Camellia
+# key exchange: ECDHE, RSA, DHE (no DHE-DSS)
+# DH params size: >= 2048
+# RSA params size: >= 2048
+# TLS protocols: TLS >= 1.2, DTLS >= 1.2
 
 mac = AEAD HMAC-SHA2-256 HMAC-SHA1 UMAC-128 HMAC-SHA2-384 HMAC-SHA2-512
 mac@Kerberos = HMAC-SHA2-384 HMAC-SHA2-256 AEAD UMAC-128 HMAC-SHA2-512 HMAC-SHA1

@@ -84,6 +84,45 @@ class JavaGenerator(ConfigGenerator):
         'RSA-PSK': 'RSAPSK'
     }
 
+    group_not_map = {
+        'X25519': 'x25519',
+        'SECP256R1': 'secp256r1',
+        'SECP384R1': 'secp384r1',
+        'SECP521R1': 'secp521r1',
+        'X448': 'x448',
+        'FFDHE-2048': 'ffdhe2048',
+        'FFDHE-3072': 'ffdhe3072',
+        'FFDHE-4096': 'ffdhe4096',
+        'FFDHE-6144': 'ffdhe6144',
+        'FFDHE-8192': 'ffdhe8192',
+        'BRAINPOOL-P256R1': 'brainpoolP256r1',
+        # brainpoolP320r1 - unconditionally disabled
+        'BRAINPOOL-P384R1': 'brainpoolP384r1',
+        'BRAINPOOL-P512R1': 'brainpoolP512r1',
+    }
+    group_always_disabled = [
+        'secp112r1', 'secp112r2', 'secp128r1', 'secp128r2',
+        'secp160k1', 'secp160r1', 'secp160r2',
+        'secp192k1', 'secp192r1',
+        'secp224k1', 'secp224r1',
+        'secp256k1',
+        'sect113r1', 'sect113r2', 'sect131r1', 'sect131r2',
+        'sect163k1', 'sect163r1', 'sect163r2',
+        'sect193r1', 'sect193r2',
+        'sect233k1', 'sect233r1',
+        'sect239k1',
+        'sect283k1', 'sect283r1',
+        'sect409k1', 'sect409r1',
+        'sect571k1', 'sect571r1',
+        'X9.62 c2tnb191v1', 'X9.62 c2tnb191v2', 'X9.62 c2tnb191v3',
+        'X9.62 c2tnb239v1', 'X9.62 c2tnb239v2', 'X9.62 c2tnb239v3',
+        'X9.62 c2tnb359v1',
+        'X9.62 c2tnb431r1',
+        'X9.62 prime192v2', 'X9.62 prime192v3',
+        'X9.62 prime239v1', 'X9.62 prime239v2', 'X9.62 prime239v3',
+        'brainpoolP320r1',
+    ]
+
     sign_not_map = {
         'RSA-MD5': 'MD5withRSA',
         'RSA-SHA1': 'SHA1withRSA',
@@ -153,12 +192,7 @@ class JavaGenerator(ConfigGenerator):
         shared.append(keysize('RSA', policy.integers['min_rsa_size']))
         shared.append(keysize('DSA', policy.integers['min_dsa_size']))
         shared.append(keysize('DH', policy.integers['min_dh_size']))
-
-        # this unconditional measure is mostly because
-        # jdk.tls.namedGroups, an allowlisting and, all around,
-        # a mighty more preferable property,
-        # is a system property that might not be picked up
-        shared.append('EC keySize < 256')
+        shared.append(keysize('EC', policy.integers['min_ec_size']))
 
         cfg = f'jdk.certpath.disabledAlgorithms={", ".join(shared)}'
 
@@ -169,6 +203,8 @@ class JavaGenerator(ConfigGenerator):
                 pass
 
         cfg += f'\njdk.tls.disabledAlgorithms={", ".join(shared)}'
+        # https://bugs.openjdk.org/browse/JDK-8236730
+        cfg = cls.append(cfg, 'include jdk.disabled.namedCurves', sep)
 
         for i in ip['protocol']:
             try:
@@ -194,54 +230,25 @@ class JavaGenerator(ConfigGenerator):
             except KeyError:
                 pass
 
-        cfg += '\njdk.tls.legacyAlgorithms='
+        cfg += '\n'
+
+        s = ''
+        for i in ip['group']:
+            try:
+                s = cls.append(s, cls.group_not_map[i], sep)
+            except KeyError:
+                pass
+        for g in cls.group_always_disabled:
+            s = cls.append(s, g, sep)
+        cfg += f'jdk.disabled.namedCurves={s}\n'
+
         s = ''
         for i in p['cipher']:
             try:
                 s = cls.append(s, cls.cipher_legacy_map[i], sep)
             except KeyError:
                 pass
-        cfg += f'{s}\n'
-
-        return cfg
-
-    @classmethod
-    def test_config(cls, config):  # pylint: disable=unused-argument
-        return True
-
-
-class JavaSystemGenerator(ConfigGenerator):
-    CONFIG_NAME = 'javasystem'
-    SCOPES = {'tls', 'ssl', 'java-tls'}
-
-    group_map = {
-        'X25519': 'x25519',
-        'SECP256R1': 'secp256r1',
-        'SECP384R1': 'secp384r1',
-        'SECP521R1': 'secp521r1',
-        'X448': 'x448',
-        'FFDHE-2048': 'ffdhe2048',
-        'FFDHE-3072': 'ffdhe3072',
-        'FFDHE-4096': 'ffdhe4096',
-        'FFDHE-6144': 'ffdhe6144',
-        'FFDHE-8192': 'ffdhe8192',
-    }
-
-    @classmethod
-    def generate_config(cls, policy):
-        p = policy.enabled
-        sep = ', '
-        cfg = ''
-
-        cfg += f'jdk.tls.ephemeralDHKeySize={policy.integers["min_dh_size"]}\n'
-
-        s = ''
-        for i in p['group']:
-            try:
-                s = cls.append(s, cls.group_map[i], sep)
-            except KeyError:
-                pass
-        cfg += f'jdk.tls.namedGroups={s}\n'
+        cfg += f'jdk.tls.legacyAlgorithms={s}\n'
 
         return cfg
 

@@ -1,2 +1,0 @@
-jdk.tls.ephemeralDHKeySize=3072
-jdk.tls.namedGroups=secp256r1, secp384r1, secp521r1, ffdhe2048, ffdhe3072, ffdhe4096

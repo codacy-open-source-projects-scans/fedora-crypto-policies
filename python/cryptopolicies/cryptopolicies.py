@@ -28,7 +28,7 @@ INT_DEFAULTS = dict.fromkeys((
     '__openssl_block_sha1_signatures',  # FUTURE/TEST-FEDORA39/NO-SHA1
     'sha1_in_certs',
     'ssh_certs',
-), 0)
+), 0) | {'min_ec_size': 256}
 
 
 # For enum values, first value works as default,

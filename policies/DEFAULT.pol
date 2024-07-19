@@ -1,6 +1,7 @@
 # A reasonable default for today's standards. It should provide
-# 112-bit security with the exception of SHA1 signatures in DNSSec
-# SHA1 is also enabled in HMAC where collision attacks do not matter.
+# 112-bit security with the exception of SHA1 signatures in DNSSec.
+# SHA1 is allowed in HMAC where collision attacks do not matter.
+# OpenSSL distrusts signatures using SHA-1 (Changes/OpenSSLDistrustSHA1SigVer).
 
 # MACs: all HMAC with SHA1 or better + all modern MACs (Poly1305 etc)
 # Curves: all prime >= 255 bits (including Bernstein curves)
@@ -78,3 +79,6 @@ etm@SSH = ANY
 sign@RPM = DSA-SHA1+
 hash@RPM = SHA1+
 min_dsa_size@RPM = 1024
+
+# https://fedoraproject.org/wiki/Changes/OpenSSLDistrustSHA1SigVer
+__openssl_block_sha1_signatures = 1

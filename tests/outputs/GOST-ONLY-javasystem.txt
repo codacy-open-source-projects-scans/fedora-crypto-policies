@@ -1,2 +1,0 @@
-jdk.tls.ephemeralDHKeySize=2048
-jdk.tls.namedGroups=

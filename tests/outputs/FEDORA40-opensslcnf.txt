@@ -11,4 +11,4 @@ Groups = X25519:secp256r1:X448:secp521r1:secp384r1:ffdhe2048:ffdhe3072:ffdhe4096
 alg_section = evp_properties
 
 [evp_properties]
-rh-allow-sha1-signatures = no
+rh-allow-sha1-signatures = yes

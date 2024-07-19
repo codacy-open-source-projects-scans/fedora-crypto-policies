@@ -16,7 +16,7 @@ group = +P256-MLKEM512
 group = +MLKEM512
 group = +P256-KYBER768
 group = +X25519-KYBER768
-group = +KYBER768
+#group = +KYBER768  # We don't want to support pure KYBER in groups.
 
 sign = +RSA3072-SPHINCSSHAKE128FSIMPLE
 sign = +P256-SPHINCSSHAKE128FSIMPLE

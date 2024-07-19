@@ -261,6 +261,8 @@ The available options are:
     for *DH* key exchange
   * *min_dsa_size*: Integer value of minimum number of bits for *DSA* keys
   * *min_rsa_size*: Integer value of minimum number of bits for *RSA* keys
+  * *min_ec_size*: Integer value of minimum number of bits for *EC* keys
+    (Applies to *Java* back end only)
   * *sha1_in_certs*: Value of 1 if *SHA1* allowed in certificate signatures,
     0 otherwise (Applies to *GnuTLS* back end only.)
   * *arbitrary_dh_groups*: Value of 1 if arbitrary group in

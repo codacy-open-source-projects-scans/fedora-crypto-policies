@@ -295,6 +295,7 @@ def test_cryptopolicy_to_string_empty(tmpdir):
         __openssl_block_sha1_signatures = 0
         sha1_in_certs = 0
         ssh_certs = 0
+        min_ec_size = 256
         etm = ANY
         __ems = DEFAULT
         # No scope-specific properties found.
@@ -325,6 +326,7 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
         __openssl_block_sha1_signatures = 0
         sha1_in_certs = 0
         ssh_certs = 0
+        min_ec_size = 256
         etm = ANY
         __ems = ENFORCE
         # Scope-specific properties derived for select backends:
