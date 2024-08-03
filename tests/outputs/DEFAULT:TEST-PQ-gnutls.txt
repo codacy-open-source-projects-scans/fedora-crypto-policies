@@ -14,6 +14,7 @@ secure-hash = SHAKE-256
 tls-enabled-mac = AEAD
 tls-enabled-mac = SHA1
 tls-enabled-mac = SHA512
+tls-enabled-group = GROUP-X25519-KYBER768
 tls-enabled-group = GROUP-X25519
 tls-enabled-group = GROUP-SECP256R1
 tls-enabled-group = GROUP-X448

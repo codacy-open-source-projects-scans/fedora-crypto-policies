@@ -87,7 +87,7 @@ class OpenSSHGenerator(ConfigGenerator):
 
     sign_map = {
         'RSA-SHA1': 'ssh-rsa',
-        'DSA-SHA1': 'ssh-dss',
+        'DSA-SHA1': '',  # openssh no longer recognizes it
         'RSA-SHA2-256': 'rsa-sha2-256',
         'RSA-SHA2-512': 'rsa-sha2-512',
         'ECDSA-SHA2-256': 'ecdsa-sha2-nistp256',
@@ -100,7 +100,7 @@ class OpenSSHGenerator(ConfigGenerator):
 
     sign_map_certs = {
         'RSA-SHA1': 'ssh-rsa-cert-v01@openssh.com',
-        'DSA-SHA1': 'ssh-dss-cert-v01@openssh.com',
+        'DSA-SHA1': '',  # openssh no longer recognizes it
         'RSA-SHA2-256': 'rsa-sha2-256-cert-v01@openssh.com',
         'RSA-SHA2-512': 'rsa-sha2-512-cert-v01@openssh.com',
         'ECDSA-SHA2-256': 'ecdsa-sha2-nistp256-cert-v01@openssh.com',
