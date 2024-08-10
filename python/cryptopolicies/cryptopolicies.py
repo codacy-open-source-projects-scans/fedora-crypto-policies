@@ -44,7 +44,11 @@ ENUMS = {
 SCOPE_ANY = '*'
 
 ALL_SCOPES = (  # defined explicitly to catch typos / globbing nothing
-    'tls', 'ssl', 'openssl', 'nss', 'gnutls', 'java-tls',
+    'tls', 'ssl',
+    'openssl', 'gnutls', 'java-tls',
+    'nss', 'nss-tls',
+    'pkcs12', 'pkcs12-import', 'nss-pkcs12', 'nss-pkcs12-import',
+    'smime', 'smime-import', 'nss-smime', 'nss-smime-import',
     'ssh', 'openssh', 'openssh-server', 'openssh-client', 'libssh',
     'ipsec', 'ike', 'libreswan',
     'kerberos', 'krb5',
@@ -52,18 +56,27 @@ ALL_SCOPES = (  # defined explicitly to catch typos / globbing nothing
     'sequoia', 'rpm', 'rpm-sequoia',
 )
 DUMPABLE_SCOPES = {  # TODO: fix duplication, backends specify same things
-    'bind': {'bind', 'dnssec'},
-    'gnutls': {'gnutls', 'tls', 'ssl'},
-    'java-tls': {'java-tls', 'tls', 'ssl'},
-    'krb5': {'krb5', 'kerberos'},
-    'libreswan': {'ipsec', 'ike', 'libreswan'},
-    'libssh': {'libssh', 'openssh', 'ssh'},
-    'nss': {'nss', 'tls', 'ssl'},
-    'openssh-client': {'openssh-client', 'openssh', 'ssh'},
-    'openssh-server': {'openssh-server', 'openssh', 'ssh'},
-    'openssl': {'openssl', 'tls', 'ssl'},
-    'sequoia': {'sequoia'},
-    'rpm': {'rpm', 'rpm-sequoia'},
+    # scope we dump under: (relative parent scope, set of scopes applied)
+    'bind': (None, {'bind', 'dnssec'}),
+    'gnutls': (None, {'gnutls', 'tls', 'ssl'}),
+    'java-tls': (None, {'java-tls', 'tls', 'ssl'}),
+    'krb5': (None, {'krb5', 'kerberos'}),
+    'libreswan': (None, {'ipsec', 'ike', 'libreswan'}),
+    'libssh': (None, {'libssh', 'ssh'}),
+    'nss': (None, {'nss'}),
+    'nss-tls': ('nss', {'nss', 'nss-tls', 'tls', 'ssl'}),
+    'nss-pkcs12': ('nss', {'nss', 'pkcs12', 'nss-pkcs12'}),
+    'nss-pkcs12-import': ('nss-pkcs12', {'nss', 'pkcs12', 'pkcs12-import',
+                                         'nss-pkcs12', 'nss-pkcs12-import'}),
+    'nss-smime': ('nss', {'nss', 'smime', 'nss-smime'}),
+    'nss-smime-import': ('nss-smime', {'nss', 'smime', 'smime-import',
+                                       'nss-smime', 'nss-smime-import'}),
+    'openssh': (None, {'openssh', 'ssh'}),
+    'openssh-client': ('openssh', {'openssh-client', 'openssh', 'ssh'}),
+    'openssh-server': ('openssh', {'openssh-server', 'openssh', 'ssh'}),
+    'openssl': (None, {'openssl', 'tls', 'ssl'}),
+    'sequoia': (None, {'sequoia'}),
+    'rpm': (None, {'rpm', 'rpm-sequoia'}),
 }
 
 
@@ -311,7 +324,7 @@ def preprocess_text(text):
         regex = r'\b' + fr + r'\b'
         matches = {}
         for match in re.finditer(regex, text):
-            matches[match.group(0)] = re.sub(regex, to, text)
+            matches[match.group(0)] = re.sub(regex, to, match.group(0))
         for match_fr, match_to in matches.items():
             warnings.warn(PolicySyntaxDeprecationWarning(match_fr, match_to))
         text = re.sub(regex, to, text)
@@ -477,13 +490,21 @@ class UnscopedCryptoPolicy:
         for prop_name, value in generic_all.items():
             s += fmt(prop_name, value)
         anything_scope_specific = False
-        for scope_name, scope_set in DUMPABLE_SCOPES.items():
+        for scope_name, (parent_scope, scope_set) in DUMPABLE_SCOPES.items():
             specific_scoped = self.scoped(scopes=scope_set)
             specific_all = {**specific_scoped.enabled,
                             **specific_scoped.integers,
                             **specific_scoped.enums}
+            if parent_scope is not None:
+                _, parent_scope_set = DUMPABLE_SCOPES[parent_scope]
+                parent_scoped = self.scoped(scopes=parent_scope_set)
+                parent_all = {**parent_scoped.enabled,
+                              **parent_scoped.integers,
+                              **parent_scoped.enums}
+            else:
+                parent_scoped, parent_all = generic_scoped, generic_all
             for prop_name, value in specific_all.items():
-                if value != generic_all[prop_name]:
+                if value != parent_all[prop_name]:
                     if not anything_scope_specific:
                         s += ('# Scope-specific properties '
                               'derived for select backends:\n')

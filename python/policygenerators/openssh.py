@@ -219,10 +219,10 @@ class OpenSSHGenerator(ConfigGenerator):
 
 class OpenSSHClientGenerator(OpenSSHGenerator):
     CONFIG_NAME = 'openssh'
-    SCOPES = {'ssh', 'openssh', 'openssh-client'}
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'ssh', 'openssh', 'openssh-client'})
         local_kx_map = dict(cls.kx_map)
         local_gss_kx_map = dict(cls.gss_kx_map)
 
@@ -259,14 +259,14 @@ class OpenSSHClientGenerator(OpenSSHGenerator):
 
 class OpenSSHServerGenerator(OpenSSHGenerator):
     CONFIG_NAME = 'opensshserver'
-    SCOPES = {'ssh', 'openssh', 'openssh-server'}
 
     # We need to restart here,
     # since systemd needs to pick up new command line options
     RELOAD_CMD = 'systemctl try-restart sshd.service 2>/dev/null || :\n'
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'ssh', 'openssh', 'openssh-server'})
         # Difference from client, keep group1 disabled on server
         local_kx_map = dict(cls.kx_map)
         local_gss_kx_map = dict(cls.gss_kx_map)

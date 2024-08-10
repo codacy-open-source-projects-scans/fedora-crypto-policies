@@ -59,6 +59,10 @@ key_exchange = ECDHE DHE DHE-RSA PSK DHE-PSK ECDHE-PSK
 protocol = TLS1.3 TLS1.2 DTLS1.2
 ike_protocol = IKEv2
 
+cipher@{pkcs12,smime} = AES-256-CBC AES-128-CBC
+hash@{pkcs12,smime} = SHA*-256 SHA*-384 SHA*-512 SHA2-224
+key_exchange@smime = *
+
 min_tls_version = TLS1.2
 min_dtls_version = DTLS1.2
 

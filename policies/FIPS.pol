@@ -54,6 +54,11 @@ key_exchange = ECDHE DHE DHE-RSA PSK DHE-PSK ECDHE-PSK
 protocol@TLS = TLS1.3 TLS1.2 DTLS1.2
 protocol@IKE = IKEv2
 
+cipher@{pkcs12,smime} = AES-256-CBC AES-128-CBC
+hash@{pkcs12,smime} = SHA2-256 SHA2-384 SHA2-512 SHA3-256 SHA3-384 SHA3-512 \
+       SHA2-224
+key_exchange@smime = RSA DH ECDH
+
 # Parameter sizes
 min_dh_size = 2048
 min_dsa_size = 2048

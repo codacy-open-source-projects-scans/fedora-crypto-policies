@@ -31,7 +31,7 @@ mac = -HMAC-SHA1  # see above, both SSH and TLS ended up not using it
 
 group = -SECP256R1 -FFDHE-2048
 
-hash = -SHA2-224 -SHA3-256 -SHA3-384 -SHA3-512
+hash = -SHA2-224 -SHA3-256 -SHA3-384 -SHA3-512 -SHA3-224
 
 sign = -ECDSA-SHA2-224 -ECDSA-SHA2-256 -RSA-PSS-SHA2-224 -RSA-SHA2-224
 

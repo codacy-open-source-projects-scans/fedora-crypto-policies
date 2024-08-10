@@ -75,7 +75,12 @@ The policies currently provide settings for these applications and libraries:
 * *OpenJDK* runtime environment (scopes: *java-tls*, *SSL*, *TLS*)
 * *Kerberos 5* library (scopes: *krb5*, *Kerberos*)
 * *Libreswan* IPsec and IKE protocol implementation (scopes: *libreswan*, *IPSec*, *IKE*)
-* *NSS* TLS library (scopes: *NSS*, *SSL*, *TLS*)
+* *NSS* TLS library (scopes: *NSS*;
+  specific algorithm usage purposes are also affected by
+  *SSL*, *TLS*, *pkcs12*, *pkcs12-import*, *smime*, *smime-import* scopes,
+  and internal use
+  *nss-tls*, *nss-pkcs12*, *nss-pkcs12-import*,
+  *nss-smime* and *nss-smime-import* scopes.)
 * *OpenSSH* SSH2 protocol implementation (scopes: *OpenSSH*, *SSH*)
 * *OpenSSL* TLS library (scopes: *OpenSSL*, *SSL*, *TLS*)
 * *libssh* SSH2 protocol implementation (scopes: *libssh*, *SSH*)
@@ -403,6 +408,13 @@ setting of the *group* parameter.
 *sign* and *group*.
 
 * *NSS*: order of *group* values is ignored and built-in order is used instead.
+
+* *NSS*: currently is the only one
+  respecting the *pkcs12* / *pkcs12-import* scopes.
+  *pkcs12* implies *pkcs12-import*,
+  it's not possible to allow exporting without allowing importing.
+  The same applies to *smime* / *smime-import* scopes,
+  and their *nss-* prefixed internal-use variants.
 
 HISTORY
 -------

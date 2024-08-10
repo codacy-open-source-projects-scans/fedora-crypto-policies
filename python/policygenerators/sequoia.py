@@ -24,7 +24,6 @@ class SequoiaGenerator(ConfigGenerator):
     # * partially, `asymmetric_algorithms`, deduced from `sign` and `group`
 
     CONFIG_NAME = 'sequoia'
-    SCOPES = {'sequoia'}
 
     # sequoia display name to c-p name, taken from sequoia_openpgp/types/mod.rs
     hash_backwards_map = {
@@ -63,7 +62,11 @@ class SequoiaGenerator(ConfigGenerator):
     )
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        return cls._generate_config(unscoped_policy.scoped({'sequoia'}))
+
+    @classmethod
+    def _generate_config(cls, policy):
         p = policy.enabled
 
         cfg = '[hash_algorithms]\n'
@@ -144,4 +147,8 @@ class SequoiaGenerator(ConfigGenerator):
 
 class RPMSequoiaGenerator(SequoiaGenerator):
     CONFIG_NAME = 'rpm-sequoia'
-    SCOPES = {'rpm', 'rpm-sequoia'}
+
+    @classmethod
+    def generate_config(cls, unscoped_policy):
+        return cls._generate_config(unscoped_policy.scoped({'rpm',
+                                                            'rpm-sequoia'}))

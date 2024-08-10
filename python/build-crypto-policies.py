@@ -90,9 +90,9 @@ def build_policy(cmdline, policy_name, subpolicy_names=None):
         subpolicy_names = []
 
     try:
-        cp = cryptopolicies.UnscopedCryptoPolicy(policy_name,
-                                                 *subpolicy_names,
-                                                 policydir=cmdline.policydir)
+        ucp = cryptopolicies.UnscopedCryptoPolicy(policy_name,
+                                                  *subpolicy_names,
+                                                  policydir=cmdline.policydir)
     except ValueError as e:  # TODO: catch specific thing
         eprint('Error: ' + str(e))
         return 1
@@ -102,7 +102,7 @@ def build_policy(cmdline, policy_name, subpolicy_names=None):
     for g in generators:
         cls = policygenerators.__dict__[g]
         gen = cls()
-        config = gen.generate_config(cp.scoped(gen.SCOPES))
+        config = gen.generate_config(ucp)
 
         if policy_name in {'EMPTY', 'GOST-ONLY'} or gen.test_config(config):
             try:

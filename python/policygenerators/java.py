@@ -8,7 +8,6 @@ from .configgenerator import ConfigGenerator
 
 class JavaGenerator(ConfigGenerator):
     CONFIG_NAME = 'java'
-    SCOPES = {'tls', 'ssl', 'java-tls'}
 
     hash_not_map = {
         'MD2': 'MD2',
@@ -169,7 +168,8 @@ class JavaGenerator(ConfigGenerator):
     }
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'tls', 'ssl', 'java-tls'})
         p = policy.enabled
         ip = policy.disabled
         sep = ', '

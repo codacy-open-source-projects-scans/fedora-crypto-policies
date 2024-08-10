@@ -12,7 +12,6 @@ from .configgenerator import ConfigGenerator
 
 class BindGenerator(ConfigGenerator):
     CONFIG_NAME = 'bind'
-    SCOPES = {'dnssec', 'bind'}
 
     RELOAD_CMD = ('systemctl try-reload-or-restart bind.service 2>/dev/null '
                   '|| :\n')
@@ -37,7 +36,8 @@ class BindGenerator(ConfigGenerator):
     }
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'dnssec', 'bind'})
         ip = policy.disabled
         s = ''
 

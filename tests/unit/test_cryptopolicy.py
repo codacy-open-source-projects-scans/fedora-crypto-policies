@@ -330,24 +330,31 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
         etm = ANY
         __ems = ENFORCE
         # Scope-specific properties derived for select backends:
-        cipher@gnutls = DES-CBC
+        cipher@gnutls = DES-CBC RC4-128 IDEA-CBC
         hash@gnutls =
         sha1_in_certs@gnutls = 1
-        cipher@java-tls = DES-CBC
+        cipher@java-tls = DES-CBC RC4-128 IDEA-CBC
         etm@libssh = DISABLE_NON_ETM
-        cipher@nss = DES-CBC
         __ems@nss = RELAX
-        etm@openssh-client = DISABLE_NON_ETM
-        etm@openssh-server = DISABLE_NON_ETM
-        cipher@openssl = NULL DES-CBC
+        cipher@nss-tls = DES-CBC RC4-128 IDEA-CBC
+        cipher@nss-pkcs12 = IDEA-CBC
+        cipher@nss-smime-import = RC4-128 SEED-CBC IDEA-CBC
+        etm@openssh = DISABLE_NON_ETM
+        hash@openssh-server = MD5 SHA1
+        cipher@openssl = NULL DES-CBC RC4-128 IDEA-CBC
     ''').lstrip()
     cp = _policy(tmpdir,
                  TESTPOL='''
                      hash = MD5
                      cipher@openssl = SEED-CBC  # overridden in the next line
                      cipher = RC4-128 IDEA-CBC
-                     cipher@tls = DES-CBC
+                     cipher@tls = +DES-CBC
                      cipher@openssl = +NULL
+                     cipher@pkcs12 = -RC4-128
+                     cipher@nss-smime = IDEA-CBC
+                     cipher@smime-import = +SEED-CBC
+                     cipher@smime = +RC4-128  # cipher@nss-smime == cipher@nss
+                     hash@openssh-server = SHA1+
                      sha1_in_certs@gnutls = 1
                      hash@gnutls = -MD5
                      etm@SSH = DISABLE_NON_ETM

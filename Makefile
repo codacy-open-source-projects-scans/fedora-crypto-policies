@@ -3,10 +3,14 @@ DIR?=/usr/share/crypto-policies
 BINDIR?=/usr/bin
 MANDIR?=/usr/share/man
 CONFDIR?=/etc/crypto-policies
+LIBEXECDIR?=/usr/libexec
+UNITDIR?=/usr/lib/systemd/system
 DESTDIR?=
 MAN7PAGES=crypto-policies.7
 MAN8PAGES=update-crypto-policies.8 fips-finish-install.8 fips-mode-setup.8
 SCRIPTS=update-crypto-policies fips-finish-install fips-mode-setup
+LIBEXEC_SCRIPTS=fips-crypto-policy-overlay fips-setup-helper
+UNITS=fips-crypto-policy-overlay.service
 NUM_PROCS = $$(getconf _NPROCESSORS_ONLN)
 PYVERSION = -3
 DIFFTOOL?=meld
@@ -28,11 +32,16 @@ install: $(MANPAGES)
 	mkdir -p $(DESTDIR)$(MANDIR)/man7
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
 	mkdir -p $(DESTDIR)$(BINDIR)
+	mkdir -p $(DESTDIR)$(LIBEXECDIR)
+	mkdir -p $(DESTDIR)$(UNITDIR)
 	install -p -m 644 $(MAN7PAGES) $(DESTDIR)$(MANDIR)/man7
 	install -p -m 644 $(MAN8PAGES) $(DESTDIR)$(MANDIR)/man8
 	install -p -m 755 $(SCRIPTS) $(DESTDIR)$(BINDIR)
+	install -p -m 644 $(UNITS) $(DESTDIR)$(UNITDIR)
+	install -p -m 755 $(LIBEXEC_SCRIPTS) $(DESTDIR)$(LIBEXECDIR)
 	mkdir -p $(DESTDIR)$(DIR)/
 	install -p -m 644 default-config $(DESTDIR)$(DIR)
+	install -p -m 644 default-fips-config $(DESTDIR)$(DIR)
 	install -p -m 644 output/reload-cmds.sh $(DESTDIR)$(DIR)
 	for f in $$(find output -name '*.txt') ; do d=$$(dirname $$f | cut -f 2- -d '/')  ; install -p -m 644 -D -t $(DESTDIR)$(DIR)/$$d $$f ; done
 	for f in $$(find policies -name '*.p*') ; do d=$$(dirname $$f)  ; install -p -m 644 -D -t $(DESTDIR)$(DIR)/$$d $$f ; done

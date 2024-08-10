@@ -74,6 +74,15 @@ ike_protocol = IKEv2
 min_tls_version = TLS1.0
 min_dtls_version = DTLS1.0
 
+cipher@pkcs* = *
+cipher@pkcs* = -*-GCM -CHACHA20-POLY1305 -AES-192* -CAMELLIA-192*
+hash@pkcs* = *
+cipher@smime = *
+cipher@smime* = -*-GCM -CHACHA20-POLY1305 -AES-192* -CAMELLIA-*
+cipher@smime* = -RC4-128 -RC4-40 -DES40-CBC -SEED-CBC
+hash@smime* = *
+key_exchange@smime = *
+
 # Parameter sizes
 min_dh_size = 1024
 min_dsa_size = 1024

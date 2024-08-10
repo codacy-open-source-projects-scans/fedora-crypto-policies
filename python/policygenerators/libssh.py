@@ -8,7 +8,6 @@ from .configgenerator import ConfigGenerator
 
 class LibsshGenerator(ConfigGenerator):
     CONFIG_NAME = 'libssh'
-    SCOPES = {'ssh', 'libssh'}
 
     cipher_map = {
         'AES-256-GCM': 'aes256-gcm@openssh.com',
@@ -99,7 +98,8 @@ class LibsshGenerator(ConfigGenerator):
     }
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'ssh', 'libssh'})
         p = policy.enabled
         cfg = ''
         sep = ','

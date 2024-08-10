@@ -24,7 +24,6 @@ activate = 1
 
 class OpenSSLGenerator(ConfigGenerator):
     CONFIG_NAME = 'openssl'
-    SCOPES = {'tls', 'ssl', 'openssl'}
 
     cipher_not_map = {
         'AES-256-CTR': '',
@@ -151,7 +150,8 @@ class OpenSSLGenerator(ConfigGenerator):
         return s
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'tls', 'ssl', 'openssl'})
         return cls.generate_ciphers(policy) + '\n'
 
     @classmethod
@@ -291,7 +291,8 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
     }
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'tls', 'ssl', 'openssl'})
         p = policy.enabled
         # This includes the seclevel
         s = f'CipherString = {cls.generate_ciphers(policy)}\n'
@@ -334,10 +335,10 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
 
 class OpenSSLFIPSGenerator(ConfigGenerator):
     CONFIG_NAME = 'openssl_fips'
-    SCOPES = {'tls', 'ssl', 'openssl'}
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'tls', 'ssl', 'openssl'})
         # OpenSSL EMS relaxation is special
         # in that it uses a separate FIPS module config
         # and, just in case, EMS is enforcing by default.

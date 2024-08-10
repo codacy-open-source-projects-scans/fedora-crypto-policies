@@ -63,6 +63,14 @@ ike_protocol = IKEv2
 min_tls_version = TLS1.2
 min_dtls_version = DTLS1.2
 
+cipher@pkcs12 = AES-256-CBC AES-128-CBC
+cipher@pkcs12-import = 3DES-CBC+ RC2-CBC+
+hash@pkcs12-import = SHA1+
+cipher@nss-smime = AES-256-CBC AES-128-CBC 3DES-CBC
+cipher@smime-import = RC2-CBC+
+hash@smime = SHA1+
+key_exchange@smime = *
+
 # Parameter sizes
 min_dh_size = 2048
 min_dsa_size = 2048

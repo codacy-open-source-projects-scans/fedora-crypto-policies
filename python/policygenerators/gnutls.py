@@ -15,7 +15,6 @@ from .configgenerator import ConfigGenerator
 
 class GnuTLSGenerator(ConfigGenerator):
     CONFIG_NAME = 'gnutls'
-    SCOPES = {'tls', 'ssl', 'gnutls'}
 
     mac_map = {
         'AEAD': 'AEAD',
@@ -162,7 +161,8 @@ class GnuTLSGenerator(ConfigGenerator):
     }
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'tls', 'ssl', 'gnutls'})
         p = policy.enabled
 
         s = textwrap.dedent('''

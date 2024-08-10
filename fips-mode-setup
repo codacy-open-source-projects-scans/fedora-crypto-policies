@@ -8,6 +8,7 @@ check=0
 boot_config=1
 err_if_disabled=0
 output_text=1
+uki_file=/sys/firmware/efi/efivars/StubInfo-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
 
 is_ostree_system=0
 if test -f /run/ostree-booted -o -d /ostree; then
@@ -65,6 +66,11 @@ if test $usage = 1 -o x$enable_fips = x ; then
 	echo "usage: $0 --check"
 	echo "usage: $0 --is-enabled"
 	exit 2
+fi
+
+if test -e "$uki_file" && test "$FIPS_MODE_SETUP_SKIP_UKI_CHECK" != 1; then
+	echo >&2 "UKI detected ($uki_file is present), forcing --no-bootcfg."
+	boot_config=0
 fi
 
 # We don't handle the boot config on OSTree systems for now; it is assumed to be

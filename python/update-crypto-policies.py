@@ -108,10 +108,16 @@ def is_applied():
     try:
         time1 = os.stat(os.path.join(state_dir, 'current')).st_mtime
         time2 = os.stat(os.path.join(base_dir, 'config')).st_mtime
+        with open(os.path.join(state_dir, 'current'), encoding='utf-8') as f:
+            contents1 = f.read()
+        with open(os.path.join(base_dir, 'config'), encoding='utf-8') as f:
+            contents2 = f.read()
     except OSError:
         sys.exit(77)
 
-    if time1 >= time2:
+    if (time1 >= time2
+            and contents1 == contents2
+            and not is_fips_auto_bind_mounted()):
         print("The configured policy is applied")
         sys.exit(0)
     print("The configured policy is NOT applied")
@@ -190,6 +196,31 @@ def fips_mode():
             return int(f.read()) > 0
     except OSError:
         return False
+
+
+def is_mounted(whatsuffix, where):
+    whatsuffix, where = whatsuffix.encode(), where.encode()
+    with open('/proc/self/mountinfo', 'br') as f:
+        for line in reversed(f.readlines()):
+            _, _, _, what_, where_, *_ = line.split(b' ')
+            if where == where_:
+                return what_.endswith(whatsuffix)
+    return False
+
+
+def is_fips_auto_bind_mounted():
+    policy_file = os.path.join(base_dir, 'config')
+    backends = os.path.join(base_dir, 'back-ends')
+    return (is_mounted('/crypto-policies/default-fips-config', policy_file)
+            and is_mounted('/crypto-policies/back-ends/FIPS', backends))
+
+
+def umount_fips_auto_bind():
+    assert is_fips_auto_bind_mounted()  # noqa: S101
+    policy_file = os.path.join(base_dir, 'config')
+    backends = os.path.join(base_dir, 'back-ends')
+    subprocess.check_call(['/bin/umount', policy_file])
+    subprocess.check_call(['/bin/umount', backends])
 
 
 def safe_write(directory, filename, contents):
@@ -358,14 +389,44 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
         sys.exit(1)
 
     try:
-        cp = cryptopolicies.UnscopedCryptoPolicy(pconfig.policy,
-                                                 *pconfig.subpolicies)
+        ucp = cryptopolicies.UnscopedCryptoPolicy(pconfig.policy,
+                                                  *pconfig.subpolicies)
     except cryptopolicies.validation.PolicyFileNotFoundError as ex:
         eprint(ex)
         sys.exit(1)
     except cryptopolicies.validation.PolicySyntaxError as ex:
         eprint(f'Errors found in policy, first one:  \n{ex}')
         sys.exit(1)
+
+    if is_fips_auto_bind_mounted():
+        # System has been booted with fips=1 and either of dracut module
+        # or systemd unit caught that and set up bind mounts of
+        # /usr/share/crypto-policies/back-ends/FIPS/
+        # -> /etc/crypto-policies/back-ends/ and
+        # /usr/share/crypto-policies/default-fips-config
+        # -> /etc/crypto-policies/config
+        eprint("There's an automatic FIPS policy bind-mount "
+               "from booting with fips=1")
+        eprint(f"The information under {state_dir} might not be accurate.")
+        if set_config:  # Unset this "auto-policy" to set a proper one.
+            print("Removing automatic FIPS policy bind-mount")
+            umount_fips_auto_bind()
+            # proceed with updating the policy
+        elif glob.glob(os.path.join(local_dir, '*-*.config')):
+            eprint(f"There are drop-in files under {local_dir} that will be"
+                   "ignored in an automatic FIPS policy. "
+                   "To make them effective, manually switch to a FIPS policy "
+                   "by running `update-crypto-policies --set FIPS`.")
+            # nothing to update, it's a bind-mount to pregenerated files anyway
+            return err
+        else:
+            print("Consider switching to a permanent FIPS policy with "
+                  "update-crypto-policies --set FIPS, so that "
+                  f"the information under {state_dir} is accurate "
+                  f"and files that might be added to {local_dir} "
+                  "in the future will be in effect.")
+            # nothing to update, it's a bind-mount to pregenerated files anyway
+            return err
 
     if print_enabled:
         print("Setting system policy to " + str(pconfig))
@@ -376,7 +437,7 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
         cls = policygenerators.__dict__[g]
         gen = cls()
         try:
-            config = gen.generate_config(cp.scoped(gen.SCOPES))
+            config = gen.generate_config(ucp)
         except LookupError:
             eprint('Error generating config for ' + gen.CONFIG_NAME)
             eprint('Keeping original configuration')
@@ -385,7 +446,7 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
         try:
             save_config(pconfig, gen.CONFIG_NAME, config,
                         backend_config_dir, local_dir, profile_dir,
-                        policy_was_empty=cp.is_empty(),
+                        policy_was_empty=ucp.is_empty(),
                         allow_symlinking=allow_symlinking)
         except OSError:
             eprint('Error saving config for ' + gen.CONFIG_NAME)
@@ -406,7 +467,7 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
         err = 2
 
     try:
-        safe_write(state_dir, 'CURRENT.pol', str(cp))
+        safe_write(state_dir, 'CURRENT.pol', str(ucp))
     except OSError:
         eprint('Error updating current policy dump')
         err = 2

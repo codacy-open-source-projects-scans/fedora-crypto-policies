@@ -12,7 +12,6 @@ from .configgenerator import ConfigGenerator
 
 class LibreswanGenerator(ConfigGenerator):
     CONFIG_NAME = 'libreswan'
-    SCOPES = {'ipsec', 'ike', 'libreswan'}
 
     RELOAD_CMD = 'systemctl try-restart ipsec.service 2>/dev/null || :\n'
 
@@ -132,7 +131,8 @@ class LibreswanGenerator(ConfigGenerator):
         return cls.group_prio_map[key]
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'ipsec', 'ike', 'libreswan'})
         cfg = 'conn %default\n'
         sep = ','
         p = policy.enabled

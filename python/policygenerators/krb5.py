@@ -8,7 +8,6 @@ from .configgenerator import ConfigGenerator
 
 class KRB5Generator(ConfigGenerator):
     CONFIG_NAME = 'krb5'
-    SCOPES = {'kerberos', 'krb5'}
 
     cipher_map = {
         'CAMELLIA-256-CBC': 'camellia256-cts-cmac',
@@ -26,7 +25,8 @@ class KRB5Generator(ConfigGenerator):
     }
 
     @classmethod
-    def generate_config(cls, policy):
+    def generate_config(cls, unscoped_policy):
+        policy = unscoped_policy.scoped({'kerberos', 'krb5'})
         p = policy.enabled
         sep = ' '
 
