@@ -190,6 +190,39 @@ if test "$boot_config" = 1 && test -z "$(ls -A /boot)" ; then
 	exit 1
 fi
 
+if test "$FIPS_MODE_SETUP_SKIP_ARGON2_CHECK" != 1 && \
+		test -x "$(command -v cryptsetup)" ; then
+	# Best-effort detection of LUKS Argon2 usage
+	argon2_found=''
+	# two redundant ways to list device names
+	devs=$( (find /dev/mapper/ -type l | xargs basename; \
+		dmsetup ls --target crypt | cut -f1) \
+		| sort -u)
+		while IFS= read -r devname; do
+			back=$(cryptsetup status "$devname" | \
+				grep -F device: |
+				sed -E 's/.*device:\s+//')
+			if ! test -b "$back"; then
+				echo >&2 -n "Warning: detected device '$back' "
+				echo >&2 -n 'is not a valid block device. '
+				echo >&2 'Cannot check whether it uses Argon2.'
+				continue
+			fi
+			dump=$(cryptsetup luksDump "$back")
+			if grep -qEi 'PBKDF:.*argon' <<<"$dump"; then
+				argon2_found+=" $back($devname)"
+			fi
+		done <<<"$devs"
+	if test -n "$argon2_found" ; then
+		echo >&2 -n "The following encrypted devices use Argon2 PBKDF:"
+		echo >&2 "$argon2_found"
+		echo >&2 'Aborting fips-mode-setup because of that.'
+		echo >&2 -n 'Please refer to the '
+		echo >&2 'cryptsetup-luksConvertKey(8) manpage.'
+		exit 76
+	fi
+fi
+
 if test "$FIPS_MODE_SETUP_SKIP_WARNING" != 1 ; then
 	if test $enable_fips = 1 ; then
 		echo >&2 "*****************************************************************"
