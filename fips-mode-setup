@@ -195,7 +195,7 @@ if test "$FIPS_MODE_SETUP_SKIP_ARGON2_CHECK" != 1 && \
 	# Best-effort detection of LUKS Argon2 usage
 	argon2_found=''
 	# two redundant ways to list device names
-	devs=$( (find /dev/mapper/ -type l | xargs basename; \
+	devs=$( (find /dev/mapper/ -type l -printf '%f\n'; \
 		dmsetup ls --target crypt | cut -f1) \
 		| sort -u)
 		while IFS= read -r devname; do
