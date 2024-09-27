@@ -250,7 +250,7 @@ def safe_symlink(directory, filename, target):
         raise
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-positional-arguments
 def save_config(pconfig, cfgname, cfgdata, cfgdir, localdir, profiledir,
                 policy_was_empty, allow_symlinking=False):
     local_cfg_path = os.path.join(localdir, cfgname + '-*.config')

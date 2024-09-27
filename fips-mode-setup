@@ -143,11 +143,12 @@ if test $check = 1 ; then
 
 	# Decide 2: initramfs module presence
 	if test "$initramfs_inspectable" = 1 ; then
-		if test "$initramfs_fips_module" = 1 ; then
-			fips_positive=1
-		else
+		if test "$initramfs_fips_module" != 1 ; then
 			fips_negative=1
 		fi
+		# from dracut ~104 the module will be always enabled,
+		# so *not* having it is a fips_negative sign,
+		# but having it is neither
 	fi
 
 	# Decide 3: active crypto-policy
