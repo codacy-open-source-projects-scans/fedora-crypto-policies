@@ -415,6 +415,8 @@ setting of the *group* parameter.
   it's not possible to allow exporting without allowing importing.
   The same applies to *smime* / *smime-import* scopes,
   and their *nss-* prefixed internal-use variants.
+  These scopes cannot be used for enabling signature algorithms
+  that weren't otherwise enabled.
 
 HISTORY
 -------

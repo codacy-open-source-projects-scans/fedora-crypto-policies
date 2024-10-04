@@ -208,6 +208,18 @@ class NSSGenerator(ConfigGenerator):
         'DSA-': 'DSA',
         'EDDSA-ED25519': 'ED25519',
     }
+    sign_suffix_ordmap = {
+        '-MD5': 'MD5',
+        '-SHA1': 'SHA1',
+        '-SHA2-224': 'SHA224',
+        '-SHA2-256': 'SHA256',
+        '-SHA2-384': 'SHA384',
+        '-SHA2-512': 'SHA512',
+        '-SHA3-224': 'SHA3-224',
+        '-SHA3-256': 'SHA3-256',
+        '-SHA3-384': 'SHA3-384',
+        '-SHA3-512': 'SHA3-512',
+    }
 
     @classmethod
     def generate_config(cls, unscoped_policy):
@@ -297,18 +309,27 @@ class NSSGenerator(ConfigGenerator):
         for i in ssl_policy.enabled['hash']:
             if (hash_alg := cls.hash_map.get(i)) is not None:
                 hashes_and_purposes.add(hash_alg, 'ssl-key-exchange')
-                hashes_and_purposes.add(hash_alg, 'cert-signature')
-                hashes_and_purposes.add(hash_alg, 'signature')
         for i in pkcs12_export_import_policy.enabled['hash']:
             if (hash_alg := cls.hash_map.get(i)) is not None:
                 hashes_and_purposes.add(hash_alg, 'pkcs12')
         for i in pkcs12_import_policy.enabled['hash']:
             if (hash_alg := cls.hash_map.get(i)) is not None:
                 hashes_and_purposes.add(hash_alg, 'pkcs12-legacy')
-        for i in smime_export_import_policy.enabled['hash']:
-            if (hash_alg := cls.hash_map.get(i)) is not None:
-                hashes_and_purposes.add(hash_alg, 'smime-signature')
-                hashes_and_purposes.add(hash_alg, 'signature')
+        # but for signature purposes, we'd better look at `sign`
+        for i in ssl_policy.enabled['sign']:
+            for suffix, sighashalg in cls.sign_suffix_ordmap.items():
+                if i.endswith(suffix):
+                    hashes_and_purposes.add(sighashalg, 'cert-signature')
+                    hashes_and_purposes.add(sighashalg, 'signature')
+        for i in smime_export_import_policy.enabled['sign']:
+            for suffix, sighashalg in cls.sign_suffix_ordmap.items():
+                if i.endswith(suffix):
+                    hashes_and_purposes.add(sighashalg, 'smime-signature')
+        for i in smime_import_policy.enabled['key_exchange']:
+            for suffix, sighashalg in cls.sign_suffix_ordmap.items():
+                if i.endswith(suffix):
+                    hashes_and_purposes.add(sighashalg,
+                                            'smime-signature-legacy')
         r.extend(hashes_and_purposes.deduplicated())
 
         kex_and_purposes = PurposeDeduplicator({
@@ -343,11 +364,6 @@ class NSSGenerator(ConfigGenerator):
                     sigalgs_and_purposes.add(sigalg, 'cert-signature')
                     sigalgs_and_purposes.add(sigalg, 'signature')
         for i in smime_export_import_policy.enabled['sign']:
-            for prefix, sigalg in cls.sign_prefix_ordmap.items():
-                if i.startswith(prefix):
-                    sigalgs_and_purposes.add(sigalg, 'smime-signature')
-                    sigalgs_and_purposes.add(sigalg, 'signature')
-        for i in smime_import_policy.enabled['sign']:
             for prefix, sigalg in cls.sign_prefix_ordmap.items():
                 if i.startswith(prefix):
                     sigalgs_and_purposes.add(sigalg, 'smime-signature')
