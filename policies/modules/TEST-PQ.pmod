@@ -61,3 +61,4 @@ sign = +P256-MLDSA44
 sign = +MLDSA44
 
 key_exchange = +SNTRUP
+key_exchange = +MLKEM768

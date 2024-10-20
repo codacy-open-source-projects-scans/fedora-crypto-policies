@@ -67,7 +67,11 @@ class OpenSSHGenerator(ConfigGenerator):
         'DHE-FFDHE-2048-SHA2-256': 'diffie-hellman-group14-sha256',
         'DHE-FFDHE-4096-SHA2-512': 'diffie-hellman-group16-sha512',
         'DHE-FFDHE-8192-SHA2-512': 'diffie-hellman-group18-sha512',
-        'SNTRUP-X25519-SHA2-512': 'sntrup761x25519-sha512@openssh.com',
+        'SNTRUP-X25519-SHA2-512': (
+            'sntrup761x25519-sha512' ','
+            'sntrup761x25519-sha512@openssh.com'
+        ),
+        'MLKEM768-X25519-SHA2-256': 'mlkem768x25519-sha256',
     }
 
     gx_map = {

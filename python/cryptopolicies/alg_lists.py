@@ -127,7 +127,7 @@ ALL_KEY_EXCHANGES = (
     'DH', 'ECDH',
     'VKO-GOST-2001', 'VKO-GOST-2012', 'VKO-GOST-KDF',
     'DHE-GSS', 'ECDHE-GSS',
-    'SNTRUP',
+    'SNTRUP', 'MLKEM768',
 )
 
 # Order matters, see preprocess_text
