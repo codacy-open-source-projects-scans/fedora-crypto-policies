@@ -40,7 +40,15 @@ sign = ECDSA-SHA3-256 ECDSA-SHA2-256 ECDSA-SHA2-256-FIDO \
        RSA-PSS-RSAE-SHA3-512 RSA-PSS-RSAE-SHA2-512 \
        RSA-SHA3-256 RSA-SHA2-256 \
        RSA-SHA3-384 RSA-SHA2-384 \
-       RSA-SHA3-512 RSA-SHA2-512
+       RSA-SHA3-512 RSA-SHA2-512 \
+       ECDSA-BRAINPOOLP256-SHA2-256 \
+       ECDSA-BRAINPOOLP384-SHA2-384 \
+       ECDSA-BRAINPOOLP512-SHA2-512
+# Brainpool RFC 8734 TLS 1.3 ones are present in
+# BSI-TR-02102-2 / revision 2024.1 in Tables 10-11:
+#	Empfohlene Signaturverfahren für TLS 1.3 (Client-/Server-Signatur)
+#	Empfohlene Signaturverfahren für TLS 1.3 (Zertifikatssignaturen)
+
 sign@DNSSec = RSA-SHA1+ ECDSA-SHA1+  # SHA1 is still prevalent in DNSSec
 
 # BSI TR 02102 / revision 2023.1 and

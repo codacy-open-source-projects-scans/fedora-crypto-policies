@@ -55,38 +55,40 @@ class OpenSSHGenerator(ConfigGenerator):
     }
 
     kx_map = {
-        'ECDHE-SECP521R1-SHA2-512': 'ecdh-sha2-nistp521',
-        'ECDHE-SECP384R1-SHA2-384': 'ecdh-sha2-nistp384',
-        'ECDHE-SECP256R1-SHA2-256': 'ecdh-sha2-nistp256',
-        'ECDHE-X25519-SHA2-256': (
-            'curve25519-sha256' ','
-            'curve25519-sha256@libssh.org'
+        ('ECDHE', 'SECP521R1', 'SHA2-512'): ('ecdh-sha2-nistp521',),
+        ('ECDHE', 'SECP384R1', 'SHA2-384'): ('ecdh-sha2-nistp384',),
+        ('ECDHE', 'SECP256R1', 'SHA2-256'): ('ecdh-sha2-nistp256',),
+        ('ECDHE', 'X25519', 'SHA2-256'): (
+            'curve25519-sha256',
+            'curve25519-sha256@libssh.org',
         ),
-        'DHE-FFDHE-1024-SHA1': 'diffie-hellman-group1-sha1',
-        'DHE-FFDHE-2048-SHA1': 'diffie-hellman-group14-sha1',
-        'DHE-FFDHE-2048-SHA2-256': 'diffie-hellman-group14-sha256',
-        'DHE-FFDHE-4096-SHA2-512': 'diffie-hellman-group16-sha512',
-        'DHE-FFDHE-8192-SHA2-512': 'diffie-hellman-group18-sha512',
-        'SNTRUP-X25519-SHA2-512': (
-            'sntrup761x25519-sha512' ','
-            'sntrup761x25519-sha512@openssh.com'
+        ('DHE', 'FFDHE-1024', 'SHA1'): ('diffie-hellman-group1-sha1',),
+        ('DHE', 'FFDHE-2048', 'SHA1'): ('diffie-hellman-group14-sha1',),
+        ('DHE', 'FFDHE-2048', 'SHA2-256'): ('diffie-hellman-group14-sha256',),
+        ('DHE', 'FFDHE-4096', 'SHA2-512'): ('diffie-hellman-group16-sha512',),
+        ('DHE', 'FFDHE-8192', 'SHA2-512'): ('diffie-hellman-group18-sha512',),
+        ('SNTRUP', 'X25519', 'SHA2-512'): (
+            'sntrup761x25519-sha512',
+            'sntrup761x25519-sha512@openssh.com',
         ),
-        'MLKEM768-X25519-SHA2-256': 'mlkem768x25519-sha256',
+        ('KEM-ECDH', 'MLKEM768-X25519', 'SHA2-256'): (
+            'mlkem768x25519-sha256',
+        ),
     }
 
     gx_map = {
-        'DHE-SHA1': 'diffie-hellman-group-exchange-sha1',
-        'DHE-SHA2-256': 'diffie-hellman-group-exchange-sha256',
+        ('DHE', 'SHA1'): ('diffie-hellman-group-exchange-sha1',),
+        ('DHE', 'SHA2-256'): ('diffie-hellman-group-exchange-sha256',),
     }
 
     gss_kx_map = {
-        'DHE-GSS-SHA1': 'gss-gex-sha1-',
-        'DHE-GSS-FFDHE-1024-SHA1': 'gss-group1-sha1-',
-        'DHE-GSS-FFDHE-2048-SHA1': 'gss-group14-sha1-',
-        'DHE-GSS-FFDHE-2048-SHA2-256': 'gss-group14-sha256-',
-        'ECDHE-GSS-SECP256R1-SHA2-256': 'gss-nistp256-sha256-',
-        'ECDHE-GSS-X25519-SHA2-256': 'gss-curve25519-sha256-',
-        'DHE-GSS-FFDHE-4096-SHA2-512': 'gss-group16-sha512-',
+        ('DHE-GSS', 'SHA1'): ('gss-gex-sha1-',),
+        ('DHE-GSS', 'FFDHE-1024', 'SHA1'): ('gss-group1-sha1-',),
+        ('DHE-GSS', 'FFDHE-2048', 'SHA1'): ('gss-group14-sha1-',),
+        ('DHE-GSS', 'FFDHE-2048', 'SHA2-256'): ('gss-group14-sha256-',),
+        ('ECDHE-GSS', 'SECP256R1', 'SHA2-256'): ('gss-nistp256-sha256-',),
+        ('ECDHE-GSS', 'X25519', 'SHA2-256'): ('gss-curve25519-sha256-',),
+        ('DHE-GSS', 'FFDHE-4096', 'SHA2-512'): ('gss-group16-sha512-',),
     }
 
     sign_map = {
@@ -149,40 +151,36 @@ class OpenSSHGenerator(ConfigGenerator):
         if s:
             cfg += f'MACs {s}\n'
 
-        s = ''
-        gss = ''
+        kxs = []
+        gss_kxs = []
         for kx in p['key_exchange']:
             for h in p['hash']:
                 if policy.integers['arbitrary_dh_groups']:
                     try:
-                        val = cls.gx_map[kx + '-' + h]
-                        s = cls.append(s, val, sep)
+                        kxs.extend(cls.gx_map[(kx, h)])
                     except KeyError:
                         pass
                     try:
-                        val = local_gss_kx_map[kx + '-' + h]
-                        gss = cls.append(gss, val, sep)
+                        gss_kxs.extend(local_gss_kx_map[(kx, h)])
                     except KeyError:
                         pass
                 for g in p['group']:
                     try:
-                        val = local_kx_map[kx + '-' + g + '-' + h]
-                        s = cls.append(s, val, sep)
+                        kxs.extend(local_kx_map[(kx, g, h)])
                     except KeyError:
                         pass
                     try:
-                        val = local_gss_kx_map[kx + '-' + g + '-' + h]
-                        gss = cls.append(gss, val, sep)
+                        gss_kxs.extend(local_gss_kx_map[(kx, g, h)])
                     except KeyError:
                         pass
 
-        if gss:
-            cfg += f'GSSAPIKexAlgorithms {gss}\n'
+        if gss_kxs:
+            cfg += f'GSSAPIKexAlgorithms {",".join(gss_kxs)}\n'
         else:
             cfg += 'GSSAPIKeyExchange no\n'
 
-        if s:
-            cfg += f'KexAlgorithms {s}\n'
+        if kxs:
+            cfg += f'KexAlgorithms {",".join(kxs)}\n'
 
         s = ''
         for i in p['sign']:
@@ -274,8 +272,8 @@ class OpenSSHServerGenerator(OpenSSHGenerator):
         # Difference from client, keep group1 disabled on server
         local_kx_map = dict(cls.kx_map)
         local_gss_kx_map = dict(cls.gss_kx_map)
-        del local_kx_map['DHE-FFDHE-1024-SHA1']
-        del local_gss_kx_map['DHE-GSS-FFDHE-1024-SHA1']
+        del local_kx_map[('DHE', 'FFDHE-1024', 'SHA1')]
+        del local_gss_kx_map[('DHE-GSS', 'FFDHE-1024', 'SHA1')]
 
         return cls.generate_options(policy, local_kx_map, local_gss_kx_map,
                                     do_host_key=True)

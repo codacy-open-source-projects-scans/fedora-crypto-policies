@@ -8,6 +8,7 @@ group = +P521-MLKEM1024
 group = +MLKEM1024
 group = +P256-MLKEM768
 group = +X25519-MLKEM768
+group = +MLKEM768-X25519
 group = +X448-MLKEM768
 group = +P384-MLKEM768
 group = +MLKEM768
@@ -61,4 +62,4 @@ sign = +P256-MLDSA44
 sign = +MLDSA44
 
 key_exchange = +SNTRUP
-key_exchange = +MLKEM768
+key_exchange = +KEM-ECDH

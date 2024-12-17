@@ -52,23 +52,23 @@ class LibsshGenerator(ConfigGenerator):
     }
 
     kx_map = {
-        'ECDHE-SECP521R1-SHA2-512': 'ecdh-sha2-nistp521',
-        'ECDHE-SECP384R1-SHA2-384': 'ecdh-sha2-nistp384',
-        'ECDHE-SECP256R1-SHA2-256': 'ecdh-sha2-nistp256',
-        'ECDHE-X25519-SHA2-256': (
-            'curve25519-sha256' ','
-            'curve25519-sha256@libssh.org'
+        ('ECDHE', 'SECP521R1', 'SHA2-512'): ('ecdh-sha2-nistp521',),
+        ('ECDHE', 'SECP384R1', 'SHA2-384'): ('ecdh-sha2-nistp384',),
+        ('ECDHE', 'SECP256R1', 'SHA2-256'): ('ecdh-sha2-nistp256',),
+        ('ECDHE', 'X25519', 'SHA2-256'): (
+            'curve25519-sha256',
+            'curve25519-sha256@libssh.org',
         ),
-        'DHE-FFDHE-1024-SHA1': 'diffie-hellman-group1-sha1',
-        'DHE-FFDHE-2048-SHA1': 'diffie-hellman-group14-sha1',
-        'DHE-FFDHE-2048-SHA2-256': 'diffie-hellman-group14-sha256',
-        'DHE-FFDHE-4096-SHA2-512': 'diffie-hellman-group16-sha512',
-        'DHE-FFDHE-8192-SHA2-512': 'diffie-hellman-group18-sha512',
+        ('DHE', 'FFDHE-1024', 'SHA1'): ('diffie-hellman-group1-sha1',),
+        ('DHE', 'FFDHE-2048', 'SHA1'): ('diffie-hellman-group14-sha1',),
+        ('DHE', 'FFDHE-2048', 'SHA2-256'): ('diffie-hellman-group14-sha256',),
+        ('DHE', 'FFDHE-4096', 'SHA2-512'): ('diffie-hellman-group16-sha512',),
+        ('DHE', 'FFDHE-8192', 'SHA2-512'): ('diffie-hellman-group18-sha512',),
     }
 
     gx_map = {
-        'DHE-SHA1': 'diffie-hellman-group-exchange-sha1',
-        'DHE-SHA2-256': 'diffie-hellman-group-exchange-sha256',
+        ('DHE', 'SHA1'): ('diffie-hellman-group-exchange-sha1',),
+        ('DHE', 'SHA2-256'): ('diffie-hellman-group-exchange-sha256',),
     }
 
     sign_map = {
@@ -112,10 +112,9 @@ class LibsshGenerator(ConfigGenerator):
                 pass
 
         if s:
-            cfg += 'Ciphers ' + s + '\n'
+            cfg += f'Ciphers {s}\n'
 
         s = ''
-
         if policy.enums['etm'] != 'DISABLE_ETM':
             for i in p['mac']:
                 try:
@@ -130,26 +129,24 @@ class LibsshGenerator(ConfigGenerator):
                     pass
 
         if s:
-            cfg += 'MACs ' + s + '\n'
+            cfg += f'MACs {s}\n'
 
-        s = ''
+        kxs = []
         for kx in p['key_exchange']:
             for h in p['hash']:
                 if policy.integers['arbitrary_dh_groups']:
                     try:
-                        val = cls.gx_map[kx + '-' + h]
-                        s = cls.append(s, val, sep)
+                        kxs.extend(cls.gx_map[(kx, h)])
                     except KeyError:
                         pass
                 for g in p['group']:
                     try:
-                        val = cls.kx_map[kx + '-' + g + '-' + h]
-                        s = cls.append(s, val, sep)
+                        kxs.extend(cls.kx_map[(kx, g, h)])
                     except KeyError:
                         pass
 
-        if s:
-            cfg += 'KexAlgorithms ' + s + '\n'
+        if kxs:
+            cfg += f'KexAlgorithms {",".join(kxs)}\n'
 
         s = ''
         for i in p['sign']:
@@ -164,8 +161,8 @@ class LibsshGenerator(ConfigGenerator):
                     pass
 
         if s:
-            cfg += 'HostKeyAlgorithms ' + s + '\n'
-            cfg += 'PubkeyAcceptedKeyTypes ' + s + '\n'
+            cfg += f'HostKeyAlgorithms {s}\n'
+            cfg += f'PubkeyAcceptedKeyTypes {s}\n'
 
         return cfg
 

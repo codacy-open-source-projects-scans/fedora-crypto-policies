@@ -152,7 +152,9 @@ class NSSGenerator(ConfigGenerator):
         'SECP256R1': 'SECP256R1',
         'SECP384R1': 'SECP384R1',
         'SECP521R1': 'SECP521R1',
-        'X25519-KYBER768': 'XYBER768D00',
+        'X25519-MLKEM768': 'mlkem768x25519',
+        # not yet recognized as of nss-3.105.0-1.fc42
+        # 'P256-MLKEM768': 'mlkem768secp256r1',
     }
 
     cipher_map = {

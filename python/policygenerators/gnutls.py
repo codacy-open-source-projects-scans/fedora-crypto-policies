@@ -54,6 +54,8 @@ class GnuTLSGenerator(ConfigGenerator):
         'FFDHE-4096': 'GROUP-FFDHE4096',
         'FFDHE-8192': 'GROUP-FFDHE8192',
         'X25519-KYBER768': 'GROUP-X25519-KYBER768',
+        'X25519-MLKEM768': 'GROUP-X25519-MLKEM768',
+        'P256-MLKEM768': 'GROUP-SECP256R1-MLKEM768',
     }
 
     group_curve_map = {

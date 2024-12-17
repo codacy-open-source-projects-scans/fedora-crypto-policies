@@ -4,8 +4,8 @@ TLS.MinProtocol = TLSv1.2
 TLS.MaxProtocol = TLSv1.3
 DTLS.MinProtocol = DTLSv1.2
 DTLS.MaxProtocol = DTLSv1.2
-SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:ed25519:ed448:rsa_pss_pss_sha256:rsa_pss_pss_sha384:rsa_pss_pss_sha512:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:rsa_pss_rsae_sha512:RSA+SHA256:RSA+SHA384:RSA+SHA512
-Groups = secp256r1:secp384r1:secp521r1:ffdhe3072:ffdhe4096:brainpoolP512r1:brainpoolP384r1:brainpoolP256r1
+SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:ed25519:ed448:rsa_pss_pss_sha256:rsa_pss_pss_sha384:rsa_pss_pss_sha512:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:rsa_pss_rsae_sha512:RSA+SHA256:RSA+SHA384:RSA+SHA512:?ecdsa_brainpoolP256r1_sha256:?ecdsa_brainpoolP384r1_sha384:?ecdsa_brainpoolP512r1_sha512
+Groups = secp256r1:secp384r1:secp521r1:ffdhe3072:ffdhe4096:brainpoolP512r1:?brainpoolP512r1tls13:brainpoolP384r1:?brainpoolP384r1tls13:brainpoolP256r1:?brainpoolP256r1tls13
 
 [openssl_init]
 alg_section = evp_properties

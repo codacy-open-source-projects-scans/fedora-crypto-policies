@@ -215,6 +215,10 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'RSA-PSS-RSAE-SHA2-512': 'rsa_pss_rsae_sha512',
         'EDDSA-ED25519': 'ed25519',
         'EDDSA-ED448': 'ed448',
+        # optional to not hard-require newer openssl version
+        'ECDSA-BRAINPOOLP256-SHA2-256': '?ecdsa_brainpoolP256r1_sha256',
+        'ECDSA-BRAINPOOLP384-SHA2-384': '?ecdsa_brainpoolP384r1_sha384',
+        'ECDSA-BRAINPOOLP512-SHA2-512': '?ecdsa_brainpoolP512r1_sha512',
         # provider-only, so, optional (openssl#23050) + marked experimental
         'MLDSA44': '?mldsa44',
         'P256-MLDSA44': '?p256_mldsa44',
@@ -271,9 +275,9 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'FFDHE-4096': 'ffdhe4096',
         'FFDHE-6144': 'ffdhe6144',
         'FFDHE-8192': 'ffdhe8192',
-        'BRAINPOOL-P256R1': 'brainpoolP256r1',
-        'BRAINPOOL-P384R1': 'brainpoolP384r1',
-        'BRAINPOOL-P512R1': 'brainpoolP512r1',
+        'BRAINPOOL-P256R1': 'brainpoolP256r1:?brainpoolP256r1tls13',
+        'BRAINPOOL-P384R1': 'brainpoolP384r1:?brainpoolP384r1tls13',
+        'BRAINPOOL-P512R1': 'brainpoolP512r1:?brainpoolP512r1tls13',
         # provider-only, so, optional (openssl#23050) + marked experimental
         'KYBER768': '?kyber768',
         'X25519-KYBER768': '?x25519_kyber768',
@@ -284,8 +288,8 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'MLKEM768': '?mlkem768',
         'P384-MLKEM768': '?p384_mlkem768',
         'X448-MLKEM768': '?x448_mlkem768',
-        'X25519-MLKEM768': '?x25519_mlkem768',
-        'P256-MLKEM768': '?p256_mlkem768',
+        'X25519-MLKEM768': '?X25519MLKEM768:?x25519_mlkem768',  # old/new name
+        'P256-MLKEM768': '?SecP256r1MLKEM768:?p256_mlkem768',  # old/new name
         'MLKEM1024': '?mlkem1024',
         'P521-MLKEM1024': '?p521_mlkem1024',
         'P384-MLKEM1024': '?p384_mlkem1024',

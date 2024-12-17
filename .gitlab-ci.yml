@@ -21,12 +21,25 @@ Fedora-rawhide:
     dracut
     diffutils
     make
+    rpmdevtools
     ruff
     python3-pylint
     python3-flake8
     python3-pytest
     python3-coverage
     codespell
+  - &fixups |
+    rpm -q gnutls
+    GNUTLSVER=$(rpm -q gnutls | head -n1)
+    GNUTLSVER=${GNUTLSVER##gnutls-}
+    ret=0
+    rpmdev-vercmp "$GNUTLSVER" 3.8.8-1 || ret=$?
+    if [[ "$ret" == 12 ]]; then
+      dnf -y install \
+        https://kojipkgs.fedoraproject.org/packages/gnutls/3.8.8/1.fc42/x86_64/gnutls-3.8.8-1.fc42.x86_64.rpm \
+        https://kojipkgs.fedoraproject.org/packages/gnutls/3.8.8/1.fc42/x86_64/gnutls-dane-3.8.8-1.fc42.x86_64.rpm \
+        https://kojipkgs.fedoraproject.org/packages/gnutls/3.8.8/1.fc42/x86_64/gnutls-utils-3.8.8-1.fc42.x86_64.rpm
+    fi
   script:
   - pushd tests && git clone --depth 1 https://github.com/frozencemetery/krb5check && popd
   - make
@@ -47,6 +60,7 @@ Fedora-rawhide-commit-range:
   image: fedora:rawhide
   before_script:
   - *preparations
+  - *fixups
   - dnf install --nogpgcheck -y wget
   - wget https://raw.githubusercontent.com/mhagger/git-test/master/bin/git-test
   script:
@@ -73,6 +87,7 @@ Fedora-rawhide-prebuilt-image-extras:
   before_script:
   - dnf -y update --refresh  # since we're using a canned image
   - *preparations
+  - *fixups
   script:
   - sequoia-policy-config-check /dev/null && echo 'sequoia-policy-config-check seems to work'
   - pushd tests && git clone --depth 1 https://github.com/frozencemetery/krb5check --reference-if-able /opt/krb5check && popd

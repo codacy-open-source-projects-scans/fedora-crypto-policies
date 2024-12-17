@@ -367,17 +367,18 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
         pconfig.parse_string(profile)
         set_config = True
         bootc = os.path.exists('/usr/bin/bootc')
+        is_in_fips_mode = fips_mode()
 
         # FIPS profile is a special case
         if pconfig.policy != oldpolicy and print_enabled:
             if pconfig.policy == 'FIPS':
-                if not bootc:
+                if not bootc and not is_in_fips_mode:
                     eprint("Warning: Using 'update-crypto-policies --set FIPS'"
                            " is not sufficient for")
                     eprint("         FIPS compliance.")
                     eprint("         Use 'fips-mode-setup --enable' "
                            "command instead.")
-            elif fips_mode():
+            elif is_in_fips_mode:
                 eprint("Warning: Using 'update-crypto-policies --set' "
                        "in FIPS mode will make the system")
                 eprint("         non-compliant with FIPS.")
