@@ -1,0 +1,5 @@
+[flake8]
+
+# E741 ambiguous variable name
+# W503 line break occurred after a binary operator
+ignore = E741,W503,

@@ -1,0 +1,98 @@
+line-length = 79
+preview = true
+
+[lint]
+explicit-preview-rules = true
+select = [
+  "ALL",
+  "CPY001",  # Missing copyright notice at top of file"
+  "FURB101",  # read-whole-file
+  "PLR6201",  # literal-membership
+  "PLW1514",  # unspecified-encoding
+  "FURB177",  # implicit-cwd
+  "RUF022",  # unsorted-dunder-all
+  "C420",  # unnecessary-dict-comprehension-for-iterable
+]
+ignore = [
+  # conflicting rules
+  "D203",  # one-blank-line-before-class (conflicting rule)
+  "D213",  # multi-line-summary-second-line (conflicting rule)
+  # rules that are overbearing
+  "S603",  # subprocess-without-shell-equals-true
+  "TRY300",  # try-consider-else
+  # stuff that flares up
+  "D100",  # undocumented-public-module
+  "D101",  # undocumented-public-class
+  "D102",  # undocumented-public-method
+  "D103",  # undocumented-public-function
+  "D104",  # undocumented-public-package
+  "D105",  # undocumented-magic-method
+  "D107",  # undocumented-public-init
+]
+per-file-ignores."python/**" = [
+  # stuff that flares up
+  "C901",  # complex-structure
+  "D205",  # blank-line-after-summary
+  "D212",  # multi-line-summary-first-line
+  "D400",  # ends-in-period
+  "D401",  # non-imperative-mood
+  "D415",  # ends-in-punctuation
+  "E741",  # ambiguous-variable-name: `l`
+  "FBT002",  # boolean-default-value-positional-argument
+  "FIX002",  # line-contains-todo
+  "FURB101",  # read-whole-file
+  "N806",  # non-lowercase-variable-in-function
+  "PLR0912",  # too-many-branches
+  "PLR0915",  # too-many-statements
+  "PTH",  # flake8-use-pathlib
+  "Q000",  # bad-quotes-inline-string
+  "T201",  # print
+  "TD002",  # missing-todo-author
+  "TD003",  # missing-todo-link
+]
+per-file-ignores."python/policygenerators/*.py" = [
+  # stuff that flares up
+  "ARG003",  # unused-class-method-argument
+  "COM812",  # missing-trailing-comma
+  "ERA001",  # commented-out-code
+  "FIX001",  # line-contains-fixme
+  "ISC001",  # single-line-implicit-string-concatenation
+  "PERF203",  # try-except-in-loop
+  "PLR2004",  # magic-value-comparison
+  "RUF012",  # mutable-class-default
+  "S602",  # subprocess-popen-with-shell-equals-true
+  "SIM102",  # collapsible-if
+  "SIM105",  # suppressible-exception
+  "TD001",  # invalid-todo-tag
+  "TD004",  # missing-todo-colon
+]
+per-file-ignores."python/build-crypto-policies.py" = [
+  "SIM102",  # collapsible-if
+]
+per-file-ignores."python/cryptopolicies/cryptopolicies.py" = [
+  "B028",  # no-explicit-stacklevel
+  "PYI024",  # collections-named-tuple
+  "S101",  # Use of `assert` detected
+]
+per-file-ignores."python/cryptopolicies/alg_lists.py" = [
+  "B028",  # no-explicit-stacklevel
+  "D402",  # no-signature
+]
+per-file-ignores."python/update-crypto-policies.py" = [
+  "PLR0913",  # too-many-arguments
+  "PLW0603",  # global-statement
+  "PLW2901",  # redefined-loop-name
+  "SIM112",  # uncapitalized-environment-variables
+]
+per-file-ignores."tests/**" = [
+  "INP001",  # implicit-namespace-package
+  "S101",  # assert
+]
+per-file-ignores."tests/*.py" = [
+  "CPY001",  # Missing copyright notice at top of file"
+  "T201",  # print
+]
+exclude = [ "tests/krb5check/*" ]
+flake8-annotations.ignore-fully-untyped = true
+flake8-quotes.inline-quotes = "single"
+flake8-quotes.multiline-quotes = "single"

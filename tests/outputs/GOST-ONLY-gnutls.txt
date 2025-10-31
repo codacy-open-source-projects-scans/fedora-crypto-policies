@@ -1,0 +1,13 @@
+[global]
+override-mode = allowlist
+
+[overrides]
+tls-enabled-mac = AEAD
+enabled-version = TLS1.3
+enabled-version = TLS1.2
+enabled-version = TLS1.1
+enabled-version = TLS1.0
+min-verification-profile = medium
+
+[priorities]
+SYSTEM=NONE

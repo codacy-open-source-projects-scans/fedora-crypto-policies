@@ -1,0 +1,15 @@
+disable-algorithms "." {
+RSAMD5;
+RSASHA1;
+NSEC3RSASHA1;
+DSA;
+NSEC3DSA;
+ECDSAP256SHA256;
+ED25519;
+ED448;
+ECCGOST;
+};
+disable-ds-digests "." {
+SHA-1;
+GOST;
+};

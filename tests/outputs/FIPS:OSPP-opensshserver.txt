@@ -1,0 +1,9 @@
+Ciphers aes256-gcm@openssh.com,aes256-ctr
+MACs hmac-sha2-256,hmac-sha2-512
+GSSAPIKeyExchange no
+KexAlgorithms ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+HostKeyAlgorithms ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-256,rsa-sha2-512
+PubkeyAcceptedAlgorithms ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-256,rsa-sha2-512
+HostbasedAcceptedAlgorithms ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-256,rsa-sha2-512
+CASignatureAlgorithms ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-256,rsa-sha2-512
+RequiredRSASize 3072

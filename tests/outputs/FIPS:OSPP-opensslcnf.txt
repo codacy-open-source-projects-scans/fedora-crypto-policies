@@ -1,0 +1,17 @@
+CipherString = @SECLEVEL=3:kEECDH:kEDH:kPSK:kDHEPSK:kECDHEPSK:-kRSAPSK:-kRSA:-aDSS:-AES128:-CHACHA20:-3DES:!DES:!RC4:!RC2:!IDEA:-SEED:!eNULL:!aNULL:-AESCCM:-SHA1:!MD5:-SHA384:-CAMELLIA:-ARIA:-AESCCM8
+Ciphersuites = 
+TLS.MinProtocol = TLSv1.2
+TLS.MaxProtocol = TLSv1.2
+DTLS.MinProtocol = DTLSv1.2
+DTLS.MaxProtocol = DTLSv1.2
+SignatureAlgorithms = ECDSA+SHA384:ECDSA+SHA512:rsa_pss_pss_sha256:rsa_pss_pss_sha384:rsa_pss_pss_sha512:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:rsa_pss_rsae_sha512:RSA+SHA256:RSA+SHA384:RSA+SHA512
+Groups = *secp521r1:secp384r1:ffdhe3072:ffdhe4096:ffdhe6144:ffdhe8192
+
+[req]
+default_bits = 3072
+
+[openssl_init]
+alg_section = evp_properties
+
+[evp_properties]
+rh-allow-sha1-signatures = no

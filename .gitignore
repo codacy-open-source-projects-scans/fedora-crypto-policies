@@ -1,0 +1,9 @@
+*.8
+*.8.xml
+*.7
+*.7.xml
+test-suite.log
+tests/java/*.class
+output/
+__pycache__
+.coverage
