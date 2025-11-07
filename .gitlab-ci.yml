@@ -1,12 +1,24 @@
-Fedora-rawhide:
-# When building CI for a particular system, adapt the image
-  image: fedora:rawhide
+variables:
+  # current Fedora linter does not recognize PQC keywords yet,
+  # but an experimental -pqc one does
+  # remove sequoia-policy-config-pqc once Fedora linter recognizes PQC keywords
+  SEQUOIA_POLICY_CONFIG_CHECK_LOOSE: >
+    sequoia-policy-config-check-0.4.0
+    sequoia-policy-config-check
+  SEQUOIA_POLICY_CONFIG_CHECK_STRICT: sequoia-policy-config-check-pqc
+
+
+Fedora-rawhide-prebuilt:
+  # see `build-images` branch
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/rawhide:latest
   before_script:
-  - &preparations >
+  - dnf -y update --refresh  # since we're using a canned image
+  - &install >
     dnf install --setopt=install_weak_deps=False --nogpgcheck -y
     openssh-clients
     openssh-server
     openssl
+    oqsprovider
     git-core
     which
     gnutls-utils
@@ -18,82 +30,50 @@ Fedora-rawhide:
     asciidoc
     libxslt
     libreswan
-    dracut
     diffutils
     make
-    rpmdevtools
     ruff
-    python3-pylint
     python3-flake8
     python3-pytest
     python3-coverage
     codespell
-  - &fixups |
-    rpm -q gnutls
-    GNUTLSVER=$(rpm -q gnutls | head -n1)
-    GNUTLSVER=${GNUTLSVER##gnutls-}
-    ret=0
-    rpmdev-vercmp "$GNUTLSVER" 3.8.8-1 || ret=$?
-    if [[ "$ret" == 12 ]]; then
-      dnf -y install \
-        https://kojipkgs.fedoraproject.org/packages/gnutls/3.8.8/1.fc42/x86_64/gnutls-3.8.8-1.fc42.x86_64.rpm \
-        https://kojipkgs.fedoraproject.org/packages/gnutls/3.8.8/1.fc42/x86_64/gnutls-dane-3.8.8-1.fc42.x86_64.rpm \
-        https://kojipkgs.fedoraproject.org/packages/gnutls/3.8.8/1.fc42/x86_64/gnutls-utils-3.8.8-1.fc42.x86_64.rpm
-    fi
+    wget
+    && dnf install --setopt=install_weak_deps=False --nogpgcheck -y python3-pip
+    && python3 -m pip install --upgrade pluggy
+    && (dnf install --setopt=install_weak_deps=False --nogpgcheck -y python3-pylint || (python3 -m pip install pylint && ln -sf /usr/local/bin/pylint /usr/local/bin/pylint-3))
+  # TODO: fold back into normal dependencies list once pylint/pluggy get unbroken on python 3.14
+  - &misc-prepare |
+    git clone --depth 1 https://github.com/frozencemetery/krb5check tests/krb5check --reference-if-able /opt/krb5check
+    sequoia-policy-config-check /dev/null  # check it's present and executes
+    sequoia-policy-config-check-0.4.0 /dev/null  # check it's present and executes
+    sequoia-policy-config-check-pqc /dev/null  # check it's present and executes
+    env GNUTLS_SYSTEM_PRIORITY_FILE=/dev/null gnutls-cli -l >/dev/null
+    nss-policy-check /etc/crypto-policies/back-ends/nss.config &>/dev/null
+    openssl ciphers > /dev/null
   script:
-  - pushd tests && git clone --depth 1 https://github.com/frozencemetery/krb5check && popd
-  - make
-  - make check
-  - make check-alternatives
+  - make build
   - make test
-  - make install && make test-install >test-install.log 2>&1 && make test-fips-setup >test-fips-setup.log 2>&1
+  - make install && make test-install >test-install.log 2>&1
   except:
   - tags
-  artifacts:
-    expire_in: 2 weeks
-    when: always
-    paths:
-      - ./*.log
 
 
-Fedora-rawhide-commit-range:
-  image: fedora:rawhide
+Fedora-rawhide-prebuilt-commit-range:
+  # see `build-images` branch
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/rawhide:latest
   before_script:
-  - *preparations
-  - *fixups
-  - dnf install --nogpgcheck -y wget
+  - dnf -y update --refresh  # since we're using a canned image
+  - *install
+  - *misc-prepare
   - wget https://raw.githubusercontent.com/mhagger/git-test/master/bin/git-test
   script:
   - git config --global user.name 'gitlab runner'
   - git config --global user.email runner@gitlab.com
   - git remote add upstream $CI_MERGE_REQUEST_PROJECT_URL
   - git fetch upstream
-  - python3 git-test add 'make test'
+  - python3 git-test add 'make build test'
   - python3 git-test run --keep-going upstream/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}..HEAD && echo --- && python3 git-test results upstream/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}..HEAD
   except:
   - tags
-  artifacts:
-    expire_in: 2 weeks
-    when: always
-    paths:
-      - ./*.log
   only:
   - merge_requests
-
-
-# This one has sequoia-policy-config-check, see `build-images` branch
-Fedora-rawhide-prebuilt-image-extras:
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/rawhide:latest
-  before_script:
-  - dnf -y update --refresh  # since we're using a canned image
-  - *preparations
-  - *fixups
-  script:
-  - sequoia-policy-config-check /dev/null && echo 'sequoia-policy-config-check seems to work'
-  - pushd tests && git clone --depth 1 https://github.com/frozencemetery/krb5check --reference-if-able /opt/krb5check && popd
-  - make
-  - make check
-  - make check-alternatives
-  - make test
-  except:
-  - tags

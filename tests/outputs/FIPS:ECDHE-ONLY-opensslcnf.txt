@@ -4,11 +4,14 @@ TLS.MinProtocol = TLSv1.2
 TLS.MaxProtocol = TLSv1.3
 DTLS.MinProtocol = DTLSv1.2
 DTLS.MaxProtocol = DTLSv1.2
-SignatureAlgorithms = ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:rsa_pss_pss_sha256:rsa_pss_pss_sha384:rsa_pss_pss_sha512:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:rsa_pss_rsae_sha512:RSA+SHA256:RSA+SHA384:RSA+SHA512:ECDSA+SHA224:RSA+SHA224
-Groups = secp256r1:secp521r1:secp384r1
+SignatureAlgorithms = ?mldsa44:?mldsa65:?mldsa87:ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA512:rsa_pss_pss_sha256:rsa_pss_pss_sha384:rsa_pss_pss_sha512:rsa_pss_rsae_sha256:rsa_pss_rsae_sha384:rsa_pss_rsae_sha512:RSA+SHA256:RSA+SHA384:RSA+SHA512:ECDSA+SHA224:RSA+SHA224
+Groups = *?SecP256r1MLKEM768:?p256_mlkem768:?X25519MLKEM768:?x25519_mlkem768:?SecP384r1MLKEM1024:?p384_mlkem1024/*secp256r1:secp521r1:secp384r1
+
+[req]
+default_bits = 2048
 
 [openssl_init]
 alg_section = evp_properties
 
 [evp_properties]
-rh-allow-sha1-signatures = yes
+rh-allow-sha1-signatures = no

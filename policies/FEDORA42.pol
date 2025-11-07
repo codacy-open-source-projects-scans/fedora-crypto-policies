@@ -48,8 +48,8 @@ cipher = AES-256-GCM AES-256-CCM CHACHA20-POLY1305 CAMELLIA-256-GCM \
 cipher@TLS = AES-256-GCM AES-256-CCM CHACHA20-POLY1305 AES-256-CBC \
     AES-128-GCM AES-128-CCM AES-128-CBC
 
-cipher@sequoia = AES-256-CFB AES-128-CFB CAMELLIA-256-CFB CAMELLIA-128-CFB
-cipher@RPM = AES-256-CFB AES-128-CFB CAMELLIA-256-CFB CAMELLIA-128-CFB
+cipher@{sequoia,RPM} = AES-256-CFB AES-256-GCM AES-256-OCB AES-256-EAX \
+    AES-128-CFB AES-128-GCM AES-128-OCB AES-128-EAX CAMELLIA-256-CFB CAMELLIA-128-CFB
 
 # CBC ciphers in SSH are considered vulnerable to plaintext recovery attacks
 # and disabled in client OpenSSH 7.6 (2017) and server OpenSSH 6.7 (2014).
@@ -88,6 +88,3 @@ etm@SSH = ANY
 sign@RPM = DSA-SHA1+
 hash@RPM = SHA1+
 min_dsa_size@RPM = 1024
-
-# https://fedoraproject.org/wiki/Changes/OpenSSLDistrustSHA1SigVer
-__openssl_block_sha1_signatures = 1

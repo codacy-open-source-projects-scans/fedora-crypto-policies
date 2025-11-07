@@ -34,6 +34,8 @@ class SequoiaGenerator(ConfigGenerator):
         'sha256': 'SHA2-256',
         'sha384': 'SHA2-384',
         'sha512': 'SHA2-512',
+        'sha3-256': 'SHA3-256',
+        'sha3-512': 'SHA3-512',
     }
 
     symmetric_backwards_map = {
@@ -51,6 +53,24 @@ class SequoiaGenerator(ConfigGenerator):
         # 'unencrypted': 'NULL',  # can't be set
     }
 
+    asymmetric_group_backwards_map = {
+        'nistp256': 'SECP256R1',
+        'nistp384': 'SECP384R1',
+        'nistp521': 'SECP521R1',
+        'cv25519': 'X25519',
+        'x25519': 'X25519',
+        'x448': 'X448',
+        'mlkem768-x25519': 'MLKEM768-X25519',
+        'mlkem1024-x448': 'MLKEM1024-X448',
+    }
+
+    asymmetric_sign_backwards_map = {
+        'ed25519': 'EDDSA-ED25519',
+        'ed448': 'EDDSA-ED448',
+        'mldsa65-ed25519': 'MLDSA65-ED25519',
+        'mldsa87-ed448': 'MLDSA87-ED448',
+    }
+
     asymmetric_always_disabled = (
         'elgamal1024',
         'elgamal2048',
@@ -61,6 +81,29 @@ class SequoiaGenerator(ConfigGenerator):
         # 'unknown',  # can't be set
     )
 
+    aead_backwards_map = {
+        'eax': {'AES-256-EAX', 'AES-128-EAX'},
+        'ocb': {'AES-256-OCB', 'AES-128-OCB'},
+        'gcm': {'AES-256-GCM', 'AES-128-GCM'},
+    }
+
+    # listing new algorithms here would let old sequoia ignore unknown values
+    ignore_invalid = {  # c-p property name -> tuple[sequoia algorithm names]
+        # sequoia-openpgp 2, rpm-sequoia 1.8
+        'hash': ('sha3-256', 'sha3-512'),
+        'group': ('x25519', 'x448', 'mlkem768-x25519', 'mlkem1024-x448'),
+        'sign': ('ed25519', 'ed448', 'mldsa65-ed25519', 'mldsa87-ed448'),
+        'aead': ('gcm',),
+    }
+
+    @classmethod
+    def _generate_ignore_invalid(cls, *kinds):
+        values = [v for k in kinds for v in cls.ignore_invalid.get(k, [])]
+        if values:
+            values = ', '.join(f'"{v}"' for v in values)
+            return f'ignore_invalid = [ {values} ]\n'
+        return ''
+
     @classmethod
     def generate_config(cls, unscoped_policy):
         return cls._generate_config(unscoped_policy.scoped({'sequoia'}))
@@ -70,6 +113,7 @@ class SequoiaGenerator(ConfigGenerator):
         p = policy.enabled
 
         cfg = '[hash_algorithms]\n'
+        cfg += cls._generate_ignore_invalid('hash')
         for seqoia_name, c_p_name in cls.hash_backwards_map.items():
             v = 'always' if c_p_name in p['hash'] else 'never'
             cfg += f'{seqoia_name}.collision_resistance = "{v}"\n'
@@ -77,18 +121,17 @@ class SequoiaGenerator(ConfigGenerator):
         cfg += 'default_disposition = "never"\n\n'
 
         cfg += '[symmetric_algorithms]\n'
+        cfg += cls._generate_ignore_invalid('cipher')
         for seqoia_name, c_p_name in cls.symmetric_backwards_map.items():
             v = 'always' if c_p_name in p['cipher'] else 'never'
             cfg += f'{seqoia_name} = "{v}"\n'
         cfg += 'default_disposition = "never"\n\n'
 
         cfg += '[asymmetric_algorithms]\n'
-        # ugly inference from other lists
+        cfg += cls._generate_ignore_invalid('group', 'sign')
+        # ugly inference from various lists: rsa/dsa is sign + min_size
         any_rsa = any(s.startswith('RSA-') for s in p['sign'])
         any_dsa = any(s.startswith('DSA-') for s in p['sign'])
-        secp256 = 'SECP256R1' in p['group']
-        secp384 = 'SECP384R1' in p['group']
-        secp521 = 'SECP521R1' in p['group']
         min_rsa = policy.integers['min_rsa_size']
         for l in 1024, 2048, 3072, 4096:
             v = 'always' if l >= min_rsa and any_rsa else 'never'
@@ -97,16 +140,61 @@ class SequoiaGenerator(ConfigGenerator):
         for l in 1024, 2048, 3072, 4096:
             v = 'always' if l >= min_dsa and any_dsa else 'never'
             cfg += f'dsa{l} = "{v}"\n'
-        cfg += f'nistp256 = "{"always" if secp256 else "never"}"\n'
-        cfg += f'nistp384 = "{"always" if secp384 else "never"}"\n'
-        cfg += f'nistp521 = "{"always" if secp521 else "never"}"\n'
-        cv25519 = 'X25519' in p['group']
-        cfg += f'cv25519 = "{"always" if cv25519 else "never"}"\n'
+        # groups
+        for seq_name, group in cls.asymmetric_group_backwards_map.items():
+            v = 'always' if group in p['group'] else 'never'
+            cfg += f'{seq_name} = "{v}"\n'
+        # sign
+        for seq_name, sign in cls.asymmetric_sign_backwards_map.items():
+            v = 'always' if sign in p['sign'] else 'never'
+            cfg += f'{seq_name} = "{v}"\n'
+        # always disabled
         for seq_name in cls.asymmetric_always_disabled:
             cfg += f'{seq_name} = "never"\n'
         cfg += 'default_disposition = "never"\n'
 
+        # aead algorithms
+        cfg += '\n[aead_algorithms]\n'
+        cfg += 'default_disposition = "never"\n'
+        cfg += cls._generate_ignore_invalid('aead')
+        for seq_name, c_p_names in cls.aead_backwards_map.items():
+            v = 'always' if c_p_names.intersection(p['cipher']) else 'never'
+            cfg += f'{seq_name} = "{v}"\n'
+
         return cfg
+
+    @classmethod
+    def _lint_config(cls, linter, config,
+                     stricter=False, linter_missing_ok=False):
+        policy_descr = 'the generated sequoia policy'
+        if stricter:
+            stricter_config = '\n'.join(
+                l for l in config.split('\n')
+                if not l.startswith('ignore_invalid = ')
+            )
+            if config != stricter_config:
+                config = stricter_config
+                policy_descr = 'a tightened sequoia policy'
+        fd, path = mkstemp()
+        try:
+            with os.fdopen(fd, 'w') as f:
+                f.write(config)
+            r = subprocess.run([linter, path], check=False, encoding='utf-8',
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT)
+            cls.eprint(f'{linter} returns {r.returncode} for {policy_descr}'
+                       + (f': `{r.stdout}`' if r.stdout else ''))
+            if (r.returncode, r.stdout) == (0, ''):
+                return True
+            cls.eprint(f'There is an error in {policy_descr}')
+        except FileNotFoundError:
+            if linter_missing_ok:
+                cls.eprint(f'{linter} not found, skipping...')
+                return True
+            cls.eprint(f'{linter} not found!')
+        finally:
+            os.unlink(path)
+        return False
 
     @classmethod
     def test_config(cls, config):
@@ -114,35 +202,28 @@ class SequoiaGenerator(ConfigGenerator):
         toml.loads(config)
         try:
             toml.loads(config)
+            cls.eprint('the generated sequoia policy is valid TOML')
         except toml_error as ex:
-            cls.eprint('There is an error in generated sequoia policy')
+            cls.eprint('There is a syntax error in generated sequoia policy')
             cls.eprint(f'Invalid TOML: {type(ex)} {ex}')
             cls.eprint(f'Policy:\n{config}')
             return False
 
-        fd, path = mkstemp()
-        try:
-            with os.fdopen(fd, 'w') as f:
-                f.write(config)
-            r = subprocess.run(['sequoia-policy-config-check',  # noqa: S607
-                                path],
-                               check=False,
-                               encoding='utf-8',
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT)
-            cls.eprint('sequoia-policy-config-check returns '
-                       f'{r.returncode}'
-                       f'{" `" + r.stdout + "`" if r.stdout else ""}')
-            if (r.returncode, r.stdout) == (0, ''):
-                return True
-            cls.eprint('There is an error in generated sequoia policy')
-            cls.eprint(f'Policy:\n{config}')
-        except FileNotFoundError:
-            cls.eprint('sequoia-policy-config not found, skipping...')
+        if os.getenv('OLD_SEQUOIA') == '1':
             return True
-        finally:
-            os.unlink(path)
-        return False
+
+        loose = os.getenv('SEQUOIA_POLICY_CONFIG_CHECK_LOOSE')
+        strict = os.getenv('SEQUOIA_POLICY_CONFIG_CHECK_STRICT')
+        if loose is None and strict is None:
+            return cls._lint_config('sequoia-policy-config-check', config,
+                                    stricter=True, linter_missing_ok=True)
+        for linter in loose.split():
+            if not cls._lint_config(linter, config, stricter=False):
+                return False
+        for linter in strict.split():
+            if not cls._lint_config(linter, config, stricter=True):
+                return False
+        return True
 
 
 class RPMSequoiaGenerator(SequoiaGenerator):

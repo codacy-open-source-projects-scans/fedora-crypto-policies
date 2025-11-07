@@ -260,7 +260,7 @@ FILES
 
 SEE ALSO
 --------
-crypto-policies(7), fips-mode-setup(8)
+crypto-policies(7)
 
 AUTHOR
 ------

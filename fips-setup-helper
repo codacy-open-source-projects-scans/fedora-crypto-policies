@@ -7,7 +7,4 @@ set -ueo pipefail
 context=$1
 [[ "$context" == 'anaconda' ]]
 
-FIPS_MODE_SETUP_SKIP_WARNING=1 exec fips-mode-setup --enable --no-bootcfg
-
-# In the future, it should be reduced to just
-# update-crypto-policies --set FIPS
+exec update-crypto-policies --set FIPS

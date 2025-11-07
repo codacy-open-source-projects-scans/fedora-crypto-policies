@@ -7,6 +7,7 @@ import collections
 import ctypes
 import ctypes.util
 import os
+import shutil
 from subprocess import CalledProcessError, call
 from tempfile import mkstemp
 
@@ -152,7 +153,7 @@ class NSSGenerator(ConfigGenerator):
         'SECP256R1': 'SECP256R1',
         'SECP384R1': 'SECP384R1',
         'SECP521R1': 'SECP521R1',
-        'X25519-MLKEM768': 'mlkem768x25519',
+        'MLKEM768-X25519': 'mlkem768x25519',
         # not yet recognized as of nss-3.105.0-1.fc42
         # 'P256-MLKEM768': 'mlkem768secp256r1',
     }
@@ -399,6 +400,11 @@ class NSSGenerator(ConfigGenerator):
 
     @classmethod
     def test_config(cls, config):
+        # If nss-policy-check is not installed, assume the policy is valid
+        nss_policy_check = shutil.which('nss-policy-check')
+        if nss_policy_check is None:
+            return True
+
         nss_path = ctypes.util.find_library('nss3')
         nss_lib = ctypes.CDLL(nss_path)
 
@@ -423,7 +429,7 @@ class NSSGenerator(ConfigGenerator):
             with os.fdopen(fd, 'w') as f:
                 f.write(config)
             try:
-                ret = call(f'/usr/bin/nss-policy-check {options} {path}'
+                ret = call(f'{nss_policy_check} {options} {path}'
                            '>/dev/null',
                            shell=True)
             except CalledProcessError:

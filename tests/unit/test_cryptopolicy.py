@@ -186,6 +186,15 @@ def test_cryptopolicy_sha1_in_dnssec(tmpdir):
     assert 'DSA-SHA1' in b.disabled['sign']
 
 
+def test_cryptopolicy_value_replacement(tmpdir):
+    with pytest.warns(
+            PolicySyntaxDeprecationWarning,
+            match='value X25519-MLKEM768 is deprecated, please rewrite your'
+            ' rules using MLKEM768-X25519'):
+        cp = _policy(tmpdir, TESTPOL='group = X25519-MLKEM768 P256-MLKEM768')
+    assert cp.scoped().enabled['group'] == ['MLKEM768-X25519', 'P256-MLKEM768']
+
+
 def test_cryptopolicy_compat_to_enum(tmpdir):
     with pytest.warns(
             PolicySyntaxDeprecationWarning,
@@ -265,12 +274,73 @@ def test_cryptopolicy_maxver(tmpdir):
 
 
 def test_cryptopolicy_experimental(tmpdir):
-    plural = 'values `P384-MLKEM768`, `P256-MLKEM768` are experimental'
+    plural = 'values `X448-MLKEM768`, `P384-MLKEM768` are experimental'
     with pytest.warns(ExperimentalValueWarning, match=plural):
         cp = _policy(tmpdir,
-                     TESTPOL='group = +P*-MLKEM768\ngroup = -P*-MLKEM768')
+                     TESTPOL='group = +*-MLKEM768\ngroup = -*-MLKEM768')
     tls_cp = cp.scoped({'tls', 'openssl'})
     assert tls_cp.enabled['group'] == []
+
+
+def test_cryptopolicy_experimental_warnings_suppression_none(recwarn, tmpdir):
+    assert len(recwarn) == 0
+    suppress_none = textwrap.dedent('''
+        group = -MLKEM768
+        sign = -MLDSA65-BP256
+    ''').lstrip()
+    _policy(tmpdir, TESTPOL=suppress_none)
+    assert len(recwarn) == 2  # noqa: PLR2004
+    assert recwarn[0].category == ExperimentalValueWarning
+    assert '`group` value `MLKEM768` is ' in str(recwarn[0].message)
+    assert recwarn[1].category == ExperimentalValueWarning
+    assert '`sign` value `MLDSA65-BP256` is ' in str(recwarn[1].message)
+
+
+def test_cryptopolicy_experimental_warnings_suppression_full(recwarn, tmpdir):
+    assert len(recwarn) == 0
+    suppress_full = textwrap.dedent('''
+        # %suppress_experimental_value_warnings=true
+        group = -MLKEM768
+        sign = -MLDSA65-BP256
+        # %suppress_experimental_value_warnings=false
+    ''').lstrip()
+    _policy(tmpdir, TESTPOL=suppress_full)
+    assert len(recwarn) == 0
+
+
+def test_cryptopolicy_experimental_warnings_suppression_part(recwarn, tmpdir):
+    assert len(recwarn) == 0
+    suppress_part = textwrap.dedent('''
+        # %suppress_experimental_value_warnings=true
+        group = -MLKEM768
+        # %suppress_experimental_value_warnings=false
+        sign = -MLDSA65-BP256
+    ''').lstrip()
+    _policy(tmpdir, TESTPOL=suppress_part)
+    # this should be 1 warning, but deduplication broke =/
+    assert len(recwarn) == 3  # noqa: PLR2004
+    assert str(recwarn[0].message) == str(recwarn[1].message)
+    assert recwarn[0].lineno == recwarn[1].lineno
+    assert recwarn[0].category == recwarn[1].category
+    assert recwarn[0].line == recwarn[1].line
+    assert str(recwarn[0].message) == str(recwarn[2].message)
+    assert recwarn[0].lineno == recwarn[2].lineno
+    assert recwarn[0].category == recwarn[2].category
+    assert recwarn[0].line == recwarn[2].line
+    assert '`sign` value `MLDSA65-BP256` is ' in str(recwarn[0].message)
+
+
+def test_cryptopolicy_experimental_warnings_suppression_reset(recwarn, tmpdir):
+    assert len(recwarn) == 0
+    suppress_pol = textwrap.dedent('''
+        # %suppress_experimental_value_warnings=true
+        group = -MLKEM768
+    ''').lstrip()
+    subpol = 'sign = -MLDSA65-BP256'  # warnings are not suppressed again
+    _policy(tmpdir, TESTPOL=suppress_pol, SUBPOL=subpol)
+    assert len(recwarn) == 1
+    assert recwarn[0].category == ExperimentalValueWarning
+    assert '`sign` value `MLDSA65-BP256` is ' in str(recwarn[0].message)
 
 
 def test_cryptopolicy_to_string_empty(tmpdir):
@@ -292,10 +362,10 @@ def test_cryptopolicy_to_string_empty(tmpdir):
         min_dh_size = 0
         min_dsa_size = 0
         min_rsa_size = 0
-        __openssl_block_sha1_signatures = 0
         sha1_in_certs = 0
         ssh_certs = 0
         min_ec_size = 256
+        __openssl_block_sha1_signatures = 1
         etm = ANY
         __ems = DEFAULT
         # No scope-specific properties found.
@@ -323,10 +393,10 @@ def test_cryptopolicy_to_string_twisted(tmpdir):
         min_dh_size = 0
         min_dsa_size = 0
         min_rsa_size = 0
-        __openssl_block_sha1_signatures = 0
         sha1_in_certs = 0
         ssh_certs = 0
         min_ec_size = 256
+        __openssl_block_sha1_signatures = 1
         etm = ANY
         __ems = ENFORCE
         # Scope-specific properties derived for select backends:

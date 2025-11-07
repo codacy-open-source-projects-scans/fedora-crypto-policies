@@ -11,7 +11,7 @@ select = [
   "PLW1514",  # unspecified-encoding
   "FURB177",  # implicit-cwd
   "RUF022",  # unsorted-dunder-all
-  "RUF025",  # unnecessary-dict-comprehension-for-iterable
+  "C420",  # unnecessary-dict-comprehension-for-iterable
 ]
 ignore = [
   # conflicting rules

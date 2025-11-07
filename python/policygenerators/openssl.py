@@ -3,6 +3,7 @@
 # Copyright (c) 2019 Red Hat, Inc.
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
+import re
 from subprocess import CalledProcessError, check_output
 
 from .configgenerator import ConfigGenerator
@@ -23,7 +24,7 @@ activate = 1
 
 
 class OpenSSLGenerator(ConfigGenerator):
-    CONFIG_NAME = 'openssl'
+    CONFIG_NAME = 'opensslcnf'
 
     cipher_not_map = {
         'AES-256-CTR': '',
@@ -42,6 +43,16 @@ class OpenSSLGenerator(ConfigGenerator):
         'RC4-128': '!RC4',
         'RC2-CBC': '!RC2',
         'NULL': '!eNULL:!aNULL'
+    }
+    cipher_notany_multimap = {
+        # CBC is documented as SSL_DES, SSL_3DES, SSL_RC2, SSL_IDEA,
+        #                      SSL_AES128, SSL_AES256,
+        #                      SSL_CAMELLIA128, SSL_CAMELLIA256, SSL_SEED
+        '-CBC': {'DES-CBC', '3DES-CBC', 'RC2-CBC', 'IDEA-CBC',
+                 'AES-128-CBC', 'AES-256-CBC',
+                 'CAMELLIA-128-CBC', 'CAMELLIA-256-CBC', 'SEED-CBC'},
+        '-AESCCM': {'AES-128-CCM', 'AES-256-CCM'},
+        '-AESGCM': {'AES-128-GCM', 'AES-256-GCM'},
     }
 
     key_exchange_map = {
@@ -76,108 +87,45 @@ class OpenSSLGenerator(ConfigGenerator):
     }
 
     ciphersuite_map = {
-        'AES-256-GCM': 'TLS_AES_256_GCM_SHA384',
-        'AES-128-GCM': 'TLS_AES_128_GCM_SHA256',
-        'CHACHA20-POLY1305': 'TLS_CHACHA20_POLY1305_SHA256',
-        'AES-128-CCM': 'TLS_AES_128_CCM_SHA256',
-        'AES-128-CCM8': 'TLS_AES_128_CCM_8_SHA256',
-        'GOST28147-TC26Z-CNT': 'GOST2012-GOST8912-GOST8912',
-        'GOST28147-CPA-CNT': 'GOST2001-GOST89-GOST89',
-        'NULL': 'TLS_SHA256_SHA256:TLS_SHA384_SHA384',
+        'TLS_AES_256_GCM_SHA384': {
+            'cipher': {'AES-256-GCM'},
+            'hash': {'SHA2-384'},
+            'protocol': {'TLS1.3', 'DTLS1.3'},
+        },
+        'TLS_AES_128_GCM_SHA256': {
+            'cipher': {'AES-128-GCM'},
+            'hash': {'SHA2-256'},
+            'protocol': {'TLS1.3', 'DTLS1.3'},
+        },
+        'TLS_CHACHA20_POLY1305_SHA256': {
+            'cipher': {'CHACHA20-POLY1305'},
+            'hash': {'SHA2-256'},
+            'protocol': {'TLS1.3', 'DTLS1.3'},
+        },
+        'TLS_AES_128_CCM_SHA256': {
+            'cipher': {'AES-128-CCM'},
+            'hash': {'SHA2-256'},
+            'protocol': {'TLS1.3', 'DTLS1.3'},
+        },
+        # This one is not enableable since c-p does not expose CCM8 ciphers:
+        # 'TLS_AES_128_CCM_8_SHA256': {
+        #     'cipher': {'AES-128-CCM8'},  # this is not a thing in c-p
+        #     'hash': {'SHA2-256'},
+        #     'protocol': {'TLS1.3', 'DTLS1.3'},
+        # },
+        'TLS_SHA256_SHA256': {
+            'cipher': {'NULL'},
+            'hash': {'SHA2-256'},
+            'mac': {'HMAC-SHA2-256'},
+            'protocol': {'TLS1.3', 'DTLS1.3'},
+        },
+        'TLS_SHA384_SHA384': {
+            'cipher': {'NULL'},
+            'hash': {'SHA2-384'},
+            'mac': {'HMAC-SHA2-384'},
+            'protocol': {'TLS1.3', 'DTLS1.3'},
+        },
     }
-
-    @classmethod
-    def generate_ciphers(cls, policy):
-        s = ''
-        p = policy.enabled
-        ip = policy.disabled
-        # We cannot separate RSA strength from DH params.
-        min_dh_size = policy.integers['min_dh_size']
-        min_rsa_size = policy.integers['min_rsa_size']
-        if min_dh_size < 1023 or min_rsa_size < 1023:
-            s = cls.append(s, '@SECLEVEL=0')
-        elif min_dh_size < 2048 or min_rsa_size < 2048:
-            s = cls.append(s, '@SECLEVEL=1')
-        elif min_dh_size < 3072 or min_rsa_size < 3072:
-            s = cls.append(s, '@SECLEVEL=2')
-        else:
-            s = cls.append(s, '@SECLEVEL=3')
-
-        for i in p['key_exchange']:
-            try:
-                s = cls.append(s, cls.key_exchange_map[i])
-            except KeyError:
-                pass
-
-        for i in ip['key_exchange']:
-            try:
-                s = cls.append(s, cls.key_exchange_not_map[i])
-            except KeyError:
-                pass
-
-        for i in ip['cipher']:
-            try:
-                s = cls.append(s, cls.cipher_not_map[i])
-            except KeyError:
-                pass
-        if 'AES-128-CCM' in ip['cipher']:
-            if 'AES-256-CCM' in ip['cipher']:
-                s = cls.append(s, '-AESCCM')
-
-        for i in ip['mac']:
-            try:
-                s = cls.append(s, cls.mac_not_map[i])
-            except KeyError:
-                pass
-
-        # These ciphers are not necessary for any
-        # policy level, and only increase the attack surface.
-        # FIXME! must be fixed for custom policies
-        for c in ('-SHA384', '-CAMELLIA', '-ARIA', '-AESCCM8'):
-            s = cls.append(s, c)
-
-        return s
-
-    @classmethod
-    def generate_ciphersuites(cls, policy):
-        s = ''
-        p = policy.enabled
-        for i in p['cipher']:
-            try:
-                s = cls.append(s, cls.ciphersuite_map[i])
-            except KeyError:
-                pass
-
-        return s
-
-    @classmethod
-    def generate_config(cls, unscoped_policy):
-        policy = unscoped_policy.scoped({'tls', 'ssl', 'openssl'})
-        return cls.generate_ciphers(policy) + '\n'
-
-    @classmethod
-    def test_config(cls, config):
-        output = b''
-        assert config.endswith('\n')  # noqa: S101
-        try:
-            output = check_output(['openssl',  # noqa: S607
-                                   'ciphers', config[:-1]])
-        except CalledProcessError:
-            cls.eprint('There is an error in openssl generated policy')
-            cls.eprint(f'Policy:\n{config}')
-            return False
-        except OSError:
-            # Ignore missing openssl
-            return True
-        if b'NULL' in output or b'ADH' in output:
-            cls.eprint('There is NULL or ADH in openssl generated policy')
-            cls.eprint(f'Policy:\n{config}')
-            return False
-        return True
-
-
-class OpenSSLConfigGenerator(OpenSSLGenerator):
-    CONFIG_NAME = 'opensslcnf'
 
     # has to cover everything c-p has
     protocol_map = {
@@ -263,7 +211,22 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'RSA3072-SPHINCSSHAKE128FSIMPLE': '?rsa3072_sphincsshake128fsimple',
     }
 
-    group_map = {
+    group_pq_map = {
+        # provider-only, so, optional (openssl#23050) + marked experimental
+        'MLKEM512': '?mlkem512',
+        'P256-MLKEM512': '?p256_mlkem512',
+        'X25519-MLKEM512': '?x25519_mlkem512',
+        'MLKEM768': '?mlkem768',
+        'P384-MLKEM768': '?p384_mlkem768',
+        'X448-MLKEM768': '?x448_mlkem768',
+        'MLKEM768-X25519': '?X25519MLKEM768:?x25519_mlkem768',  # new/old name
+        'P256-MLKEM768': '?SecP256r1MLKEM768:?p256_mlkem768',  # new/old name
+        'MLKEM1024': '?mlkem1024',
+        'P521-MLKEM1024': '?p521_mlkem1024',
+        'P384-MLKEM1024': '?SecP384r1MLKEM1024:?p384_mlkem1024',  # new/old
+    }
+
+    group_classic_map = {
         'SECP224R1': 'secp224r1',
         'SECP256R1': 'secp256r1',
         'SECP384R1': 'secp384r1',
@@ -278,22 +241,75 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         'BRAINPOOL-P256R1': 'brainpoolP256r1:?brainpoolP256r1tls13',
         'BRAINPOOL-P384R1': 'brainpoolP384r1:?brainpoolP384r1tls13',
         'BRAINPOOL-P512R1': 'brainpoolP512r1:?brainpoolP512r1tls13',
-        # provider-only, so, optional (openssl#23050) + marked experimental
-        'KYBER768': '?kyber768',
-        'X25519-KYBER768': '?x25519_kyber768',
-        'P256-KYBER768': '?p256_kyber768',
-        'MLKEM512': '?mlkem512',
-        'P256-MLKEM512': '?p256_mlkem512',
-        'X25519-MLKEM512': '?x25519_mlkem512',
-        'MLKEM768': '?mlkem768',
-        'P384-MLKEM768': '?p384_mlkem768',
-        'X448-MLKEM768': '?x448_mlkem768',
-        'X25519-MLKEM768': '?X25519MLKEM768:?x25519_mlkem768',  # old/new name
-        'P256-MLKEM768': '?SecP256r1MLKEM768:?p256_mlkem768',  # old/new name
-        'MLKEM1024': '?mlkem1024',
-        'P521-MLKEM1024': '?p521_mlkem1024',
-        'P384-MLKEM1024': '?p384_mlkem1024',
     }
+
+    @classmethod
+    def generate_ciphers(cls, policy):
+        s = ''
+        p = policy.enabled
+        ip = policy.disabled
+        # We cannot separate RSA strength from DH params.
+        min_dh_size = policy.integers['min_dh_size']
+        min_rsa_size = policy.integers['min_rsa_size']
+        if min_dh_size < 1023 or min_rsa_size < 1023:
+            s = cls.append(s, '@SECLEVEL=0')
+        elif min_dh_size < 2048 or min_rsa_size < 2048:
+            s = cls.append(s, '@SECLEVEL=1')
+        elif min_dh_size < 3072 or min_rsa_size < 3072:
+            s = cls.append(s, '@SECLEVEL=2')
+        else:
+            s = cls.append(s, '@SECLEVEL=3')
+
+        for i in p['key_exchange']:
+            try:
+                s = cls.append(s, cls.key_exchange_map[i])
+            except KeyError:
+                pass
+
+        for i in ip['key_exchange']:
+            try:
+                s = cls.append(s, cls.key_exchange_not_map[i])
+            except KeyError:
+                pass
+
+        for i in ip['cipher']:
+            try:
+                s = cls.append(s, cls.cipher_not_map[i])
+            except KeyError:
+                pass
+        for keyword, cipherset in cls.cipher_notany_multimap.items():
+            if all(c in ip['cipher'] for c in cipherset):
+                s = cls.append(s, keyword)
+
+        for i in ip['mac']:
+            try:
+                s = cls.append(s, cls.mac_not_map[i])
+            except KeyError:
+                pass
+
+        # These ciphers are not necessary for any
+        # policy level, and only increase the attack surface.
+        # FIXME! must be fixed for custom policies
+        for c in ('-SHA384', '-CAMELLIA', '-ARIA', '-AESCCM8'):
+            s = cls.append(s, c)
+
+        return s
+
+    @classmethod
+    def generate_ciphersuites(cls, policy):
+        s = ''
+        p = policy.enabled
+        # we need the output sorted by order of `cipher`
+        # finer sorting nuances are currently ignored
+        for c in p['cipher']:
+            cipher_submap = {name: spec for name, spec
+                             in cls.ciphersuite_map.items()
+                             if spec['cipher'] == {c}}
+            for ciphersuite_name, ciphersuite_spec in cipher_submap.items():
+                if all(any(val in algvalues for val in p[algclass])
+                       for algclass, algvalues in ciphersuite_spec.items()):
+                    s = cls.append(s, ciphersuite_name)
+        return s
 
     @classmethod
     def generate_config(cls, unscoped_policy):
@@ -319,11 +335,28 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         sig_algs = [cls.sign_map[i] for i in p['sign'] if i in cls.sign_map]
         s += 'SignatureAlgorithms = ' + ':'.join(sig_algs) + '\n'
 
-        groups = [cls.group_map[i] for i in p['group'] if i in cls.group_map]
-        s += 'Groups = ' + ':'.join(groups) + '\n'
+        # Separate groups into PQ and classic groups, generate them as follows:
+        # `*first_pq:rest_pq/*first_classic:rest_classic`.
+        # This way servers will prefer any PQ over any classic,
+        # and clients will send key_shares for top priority PQ
+        # and top priority classic groups
+        groups_pq = [cls.group_pq_map[i] for i in p['group']
+                     if i in cls.group_pq_map]
+        groups_classic = [cls.group_classic_map[i] for i in p['group']
+                          if i in cls.group_classic_map]
+        group_classes = (
+            (['*' + ':'.join(groups_pq)] if groups_pq else [])
+            + (['*' + ':'.join(groups_classic)] if groups_classic else [])
+        )
+        s += 'Groups = ' + '/'.join(group_classes) + '\n'
 
         if policy.enums['__ems'] == 'RELAX':
             s += 'Options = RHNoEnforceEMSinFIPS\n'
+
+        # default size for req key generation,
+        # to be consumed when bz2349857 gets fixed
+        default_rsa_size = max(policy.integers['min_rsa_size'], 2048)
+        s += f'\n[req]\ndefault_bits = {default_rsa_size}\n'
 
         # In the future it'll be just
         # s += RH_SHA1_SECTION.format('yes' if 'SHA1' in p['hash'] else 'no')
@@ -334,7 +367,24 @@ class OpenSSLConfigGenerator(OpenSSLGenerator):
         return s
 
     @classmethod
-    def test_config(cls, config):  # pylint: disable=unused-argument
+    def test_config(cls, config):
+        output = b''
+        ciphers, = re.findall(r'^CipherString = (.*)$', config, re.MULTILINE)
+
+        try:
+            output = check_output(['openssl',  # noqa: S607
+                                   'ciphers', ciphers])
+        except CalledProcessError:
+            cls.eprint('There is an error in openssl generated policy')
+            cls.eprint(f'Policy:\n{config}')
+            return False
+        except OSError:
+            # Ignore missing openssl
+            return True
+        if b'ADH' in output:
+            cls.eprint('There is ADH in openssl generated policy')
+            cls.eprint(f'Policy:\n{config}')
+            return False
         return True
 
 

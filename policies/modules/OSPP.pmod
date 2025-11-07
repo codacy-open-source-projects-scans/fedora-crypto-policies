@@ -22,21 +22,24 @@
 # * TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384  - disabled in openssl itself
 # * TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
 # * TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256  - disabled, AES 128
-# * TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+# * TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256  - disabled, AES 128
 # * TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384  - disabled in openssl itself
 # * TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 # Supported Groups Extension in ClientHello: secp256r1, secp384r1, secp521r1
 
 mac = -HMAC-SHA1  # see above, both SSH and TLS ended up not using it
 
-group = -SECP256R1 -FFDHE-2048
+group = -MLKEM768-X25519 -P256-MLKEM768 -P384-MLKEM1024 -SECP256R1 -FFDHE-2048
 
 hash = -SHA2-224 -SHA3-*
 
-sign = -*-SHA2-224 -ECDSA-SHA2-256
+sign = -MLDSA44 -MLDSA65 -MLDSA87 \
+    -ECDSA-SHA2-224 -ECDSA-SHA2-256 -RSA-PSS-SHA2-224 -RSA-SHA2-224
 
 cipher = -AES-*-CCM -AES-128-*
 cipher@!{ssh,tls} = -AES-*-CTR
+
+key_exchange = -KEM-ECDH
 
 ssh_certs = 0
 etm@ssh = DISABLE_ETM

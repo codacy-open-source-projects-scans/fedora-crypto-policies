@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -6,6 +6,7 @@
 # Copyright (c) 2019 Tomáš Mráz <tmraz@fedoraproject.org>
 
 import argparse
+import difflib
 import os
 import sys
 import warnings
@@ -68,7 +69,14 @@ def save_config(cmdline, policy_name, config_name, config):
                 old_config = f.read()
             if old_config != config:
                 eprint(f'Config for {config_name} for policy {policy_name} '
-                       'differs from the existing one')
+                       'differs from the existing one:')
+
+                def lines(s):
+                    return [l + '\n' for l in s.split('\n')]
+                diff = difflib.unified_diff(lines(old_config), lines(config),
+                                            fromfile=path,
+                                            tofile=path + '.new')
+                sys.stderr.writelines(diff)
                 return False
             return True
         except FileNotFoundError:

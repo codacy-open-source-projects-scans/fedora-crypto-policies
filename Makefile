@@ -7,14 +7,15 @@ LIBEXECDIR?=/usr/libexec
 UNITDIR?=/usr/lib/systemd/system
 DESTDIR?=
 MAN7PAGES=crypto-policies.7
-MAN8PAGES=update-crypto-policies.8 fips-finish-install.8 fips-mode-setup.8
-SCRIPTS=update-crypto-policies fips-finish-install fips-mode-setup
+MAN8PAGES=update-crypto-policies.8
+SCRIPTS=update-crypto-policies
 LIBEXEC_SCRIPTS=fips-crypto-policy-overlay fips-setup-helper
 UNITS=fips-crypto-policy-overlay.service
 NUM_PROCS = $$(getconf _NPROCESSORS_ONLN)
 PYVERSION = -3
 DIFFTOOL?=meld
 ASCIIDOC?=asciidoc
+XSLTPROC?=xsltproc
 ifneq ("$(wildcard /usr/lib/python*/*/asciidoc/resources/docbook-xsl/manpage.xsl)","")
 MANPAGEXSL?=$(wildcard /usr/lib/python*/*/asciidoc/resources/docbook-xsl/manpage.xsl)
 else
@@ -64,6 +65,7 @@ runcodespell:
 	codespell -L gost,anull,bund -S .git,./tests/krb5check/*,*.7,*.8
 
 check:
+	@mkdir -p output/compare
 	python/build-crypto-policies.py --strict --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy FIPS:OSPP --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy FIPS:ECDHE-ONLY --test --flat policies tests/outputs
@@ -71,8 +73,18 @@ check:
 	python/build-crypto-policies.py --strict --policy DEFAULT:GOST --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy GOST-ONLY --test --flat policies tests/outputs
 	python/build-crypto-policies.py --strict --policy LEGACY:AD-SUPPORT --test --flat policies tests/outputs
+	python/build-crypto-policies.py --strict --policy DEFAULT:NO-PQ --test --flat policies tests/outputs
 	python/build-crypto-policies.py --policy DEFAULT:TEST-PQ --test --flat policies tests/outputs  # not strict
-	diff policies/TEST-FEDORA41.pol policies/DEFAULT.pol
+	# FEDORA43 === DEFAULT
+	diff policies/FEDORA43.pol policies/DEFAULT.pol
+	# FEDORA43:NO-PQ == FEDORA42 == FEDORA43:TEST-PQ:NO-PQ
+	#mkdir -p output/compare/FEDORA43:NO-PQ output/compare/FEDORA42
+	python/build-crypto-policies.py --strict --policy FEDORA43:NO-PQ policies output/compare
+	python/build-crypto-policies.py --policy FEDORA43:TEST-PQ:NO-PQ policies output/compare  # not strict
+	python/build-crypto-policies.py --strict --policy FEDORA42 policies output/compare
+	diff -r output/compare/FEDORA43:NO-PQ output/compare/FEDORA42
+	diff -r output/compare/FEDORA43:TEST-PQ:NO-PQ output/compare/FEDORA42
+	rm -r output/compare
 	tests/openssl.py
 	tests/gnutls.py
 	tests/nss.py
@@ -118,23 +130,13 @@ reset-outputs:
 	@rm -rf tests/outputs/*
 	@echo "Outputs were reset. Run make check to re-generate, and commit the output."
 
-diff-outputs:
-	@rm -rf output/current
-	@mkdir -p output/current
-	python/build-crypto-policies.py --test --flat policies output/current || true
-	python/build-crypto-policies.py --policy FIPS:OSPP --test --flat policies output/current || true
-	python/build-crypto-policies.py --policy FIPS:ECDHE-ONLY --test --flat policies output/current || true
-	python/build-crypto-policies.py --policy FIPS:NO-ENFORCE-EMS --test --flat policies output/current || true
-	python/build-crypto-policies.py --policy DEFAULT:GOST --test --flat policies output/current || true
-	$(DIFFTOOL) tests/outputs output/current
-
 clean:
 	rm -f $(MAN7PAGES) $(MAN8PAGES) *.?.xml
 	rm -rf output
 
 %: %.txt
 	$(ASCIIDOC) -v -d manpage -b docbook $<
-	xsltproc --nonet -o $@ ${MANPAGEXSL} $@.xml
+	$(XSLTPROC) --nonet -o $@ ${MANPAGEXSL} $@.xml
 
 dist:
 	rm -rf crypto-policies && git clone . crypto-policies && rm -rf crypto-policies/.git/ && tar -czf crypto-policies-git$(VERSION).tar.gz crypto-policies && rm -rf crypto-policies
@@ -153,6 +155,3 @@ test-install:
 	ls -l $(CONFDIR)/back-ends/ | grep -q $$test_policy && exit 3 ; \
 	ls -l $(CONFDIR)/back-ends/ | grep -q $$current_policy || exit $$? ; \
 	update-crypto-policies --is-applied | grep -q "is applied" || exit $$?
-
-test-fips-setup:
-	CONFDIR=$(CONFDIR) ./tests/test-fips-setup.sh

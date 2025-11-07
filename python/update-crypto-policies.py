@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -376,16 +376,16 @@ def apply_policy(pconfig, profile=None, print_enabled=True,
                     eprint("Warning: Using 'update-crypto-policies --set FIPS'"
                            " is not sufficient for")
                     eprint("         FIPS compliance.")
-                    eprint("         Use 'fips-mode-setup --enable' "
-                           "command instead.")
+                    eprint("         The kernel must be started with `fips=1`"
+                           " for FIPS compliance.")
             elif is_in_fips_mode:
                 eprint("Warning: Using 'update-crypto-policies --set' "
                        "in FIPS mode will make the system")
                 eprint("         non-compliant with FIPS.")
-                eprint("         It can also break "
-                       "the ssh access to the system.")
-                eprint("         Use 'fips-mode-setup --disable' "
-                       "to disable the system FIPS mode.")
+                eprint("         It can also break ssh access to the system.")
+                eprint("         Reboot without `fips=1` on the kernel command"
+                       " line to disable the")
+                eprint("         system FIPS mode.")
 
     if base_dir == DEFAULT_BASE_DIR and os.geteuid() != 0:
         eprint("You must be root to run update-crypto-policies.")

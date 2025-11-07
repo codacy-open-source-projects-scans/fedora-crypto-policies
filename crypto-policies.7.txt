@@ -195,17 +195,18 @@ PROVIDED POLICIES
 
 *FIPS*::
   A policy to aid conformance to the *FIPS 140* requirements.
-  This policy is used internally by the *fips-mode-setup(8)* tool
-  which can switch the system into the *FIPS 140* mode.
+  This policy is used automatically by a dracut initramfs module and a systemd
+  service if the kernel is booted with `fips=1` to switch the system into the
+  *FIPS 140* mode.
   This policy provides at least 112-bit security.
 
   * MACs: all *HMAC* with *SHA1* or better
-  * Curves: all prime >= 256 bits
-  * Signature algorithms: with *SHA-256* hash or better (no *DSA*)
+  * Curves: all prime >= 256 bits, hybrid ML-KEM
+  * Signature algorithms: with *SHA-256* hash or better (no *DSA*), pure ML-DSA
   * *TLS* Ciphers: >= 128-bit key, >= 128-bit block (*AES*,
     including *AES-CBC*)
   * non-TLS Ciphers: same as *TLS* Ciphers
-  * key exchange: *ECDHE*, *DHE* (no *DHE-DSS*, no *RSA*)
+  * key exchange: *ECDHE*, *DHE* (no *DHE-DSS*, no *RSA*), KEM-ECDH
   * *DH* params size: >= 2048
   * *RSA* params size: >= 2048
   * *TLS* protocols: *TLS* >= 1.2, *DTLS* >= 1.2
@@ -309,12 +310,6 @@ COMMANDS
   back ends and allows the system administrator to change the active
   cryptographic policy.
 
-*fips-mode-setup(8)*::
-  This command allows the system administrator to enable, or disable the
-  system FIPS mode and also apply the *FIPS* cryptographic policy
-  which limits the allowed algorithms and protocols to these allowed by
-  the FIPS 140 requirements.
-
 
 NOTES
 -----
@@ -402,10 +397,19 @@ handling of the existing known hosts entries would be broken on client.
 configuration. The use of regular *DH* or *ECDH* can be limited with appropriate
 setting of the *group* parameter.
 
-* *Sequoia*: only *hash_algorithms*, *symmetric_algorithms* and
-*asymmetric_algorithms* are controlled by crypto-policies.
+* *Sequoia*: only *hash_algorithms*, *symmetric_algorithms*,
+*asymmetric_algorithms* and *aead_algorithms* are controlled by crypto-policies.
 *asymmetric_algorithms* is not controlled directly, but deduced from
 *sign* and *group*.
+
+* *OpenSSL*: order of *group* values is only respected within
+  PQ and classic group "classes", and all PQ groups are automatically sorted
+  higher than classic ones.
+  To optimize latency while connecting to both PQ and non-PQ -aware hosts,
+  key shares are generated and sent for the one highest priority PQ group
+  and the one highest priority classic group.
+  To prioritize PQ groups when both are supported, the servers prefer a PQ group
+  over a classic group if there's an overlap in any of the PQ groups.
 
 * *NSS*: order of *group* values is ignored and built-in order is used instead.
 
@@ -505,7 +509,7 @@ FILES
 
 SEE ALSO
 --------
-update-crypto-policies(8), fips-mode-setup(8)
+update-crypto-policies(8)
 
 
 AUTHOR

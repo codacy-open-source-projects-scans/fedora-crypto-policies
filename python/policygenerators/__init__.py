@@ -11,11 +11,7 @@ from .libreswan import LibreswanGenerator
 from .libssh import LibsshGenerator
 from .nss import NSSGenerator
 from .openssh import OpenSSHClientGenerator, OpenSSHServerGenerator
-from .openssl import (
-    OpenSSLConfigGenerator,
-    OpenSSLFIPSGenerator,
-    OpenSSLGenerator,
-)
+from .openssl import OpenSSLFIPSGenerator, OpenSSLGenerator
 from .sequoia import RPMSequoiaGenerator, SequoiaGenerator
 
 __all__ = [
@@ -28,7 +24,6 @@ __all__ = [
     'NSSGenerator',
     'OpenSSHClientGenerator',
     'OpenSSHServerGenerator',
-    'OpenSSLConfigGenerator',
     'OpenSSLFIPSGenerator',
     'OpenSSLGenerator',
     'RPMSequoiaGenerator',

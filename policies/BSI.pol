@@ -56,8 +56,8 @@ sign@DNSSec = RSA-SHA1+ ECDSA-SHA1+  # SHA1 is still prevalent in DNSSec
 # Not listed in BSI TR: CHACHA20-POLY1305 CAMELLIA-256-GCM CAMELLIA-128-CBC CAMELLIA-256-CBC CAMELLIA-128-GCM 
 cipher = AES-256-GCM AES-256-CCM AES-256-CTR AES-256-CBC AES-128-GCM AES-128-CCM AES-128-CTR AES-128-CBC
 
-cipher@sequoia = AES-256-CFB AES-128-CFB
-cipher@RPM = AES-256-CFB AES-128-CFB
+# BSI-TR-02102-1 is fine with GCM in general and BSI-TR-03116-4 seems to be fine with AES-128-CFB
+cipher@{sequoia,RPM} = AES-256-CFB AES-256-GCM AES-128-CFB AES-128-GCM
 
 # CBC ciphers in SSH are considered vulnerable to plaintext recovery attacks
 # and disabled in client OpenSSH 7.6 (2017) and server OpenSSH 6.7 (2014).

@@ -227,6 +227,8 @@ class LibreswanGenerator(ConfigGenerator):
 
     @classmethod
     def test_config(cls, config):
+        if os.getenv('OLD_LIBRESWAN') == '1':
+            return True
         if not os.access('/usr/sbin/ipsec', os.X_OK):
             return True
 

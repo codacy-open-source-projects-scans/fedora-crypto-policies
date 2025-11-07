@@ -73,6 +73,7 @@ def test_preprocess_text_compat_diamond_problem():
             cipher@SSH = b c
         ''').strip()
 
+    with pytest.warns(PolicySyntaxDeprecationWarning):
         assert preprocess_text('''
             # the current way of disabling ciphers
             ssh_cipher = -b
@@ -84,6 +85,7 @@ def test_preprocess_text_compat_diamond_problem():
             cipher@SSH = -b
         ''').strip()
 
+    with pytest.warns(PolicySyntaxDeprecationWarning):
         # subpolicy which used to affects cipher&ssh_cipher, but not tls_cipher
         assert preprocess_text('''
             # subpolicy

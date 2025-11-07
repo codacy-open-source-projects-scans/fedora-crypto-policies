@@ -48,8 +48,8 @@ def illegal_characters(p, original_pattern):
 
 def curly_brackets(p, original_pattern):
     if ((p.count('{'), p.count('}')) not in {(0, 0), (1, 1)}
-            or p.startswith('{') and not p.endswith('}')
-            or not p.startswith('{') and p.endswith('}')):
+            or (p.startswith('{') and not p.endswith('}'))
+            or (not p.startswith('{') and p.endswith('}'))):
         raise ScopeSelectorCurlyBracketsError(original_pattern)
 
 

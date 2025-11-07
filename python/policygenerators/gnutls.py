@@ -53,9 +53,9 @@ class GnuTLSGenerator(ConfigGenerator):
         'FFDHE-3072': 'GROUP-FFDHE3072',
         'FFDHE-4096': 'GROUP-FFDHE4096',
         'FFDHE-8192': 'GROUP-FFDHE8192',
-        'X25519-KYBER768': 'GROUP-X25519-KYBER768',
-        'X25519-MLKEM768': 'GROUP-X25519-MLKEM768',
+        'MLKEM768-X25519': 'GROUP-X25519-MLKEM768',
         'P256-MLKEM768': 'GROUP-SECP256R1-MLKEM768',
+        'P384-MLKEM1024': 'GROUP-SECP384R1-MLKEM1024',
     }
 
     group_curve_map = {
@@ -113,6 +113,10 @@ class GnuTLSGenerator(ConfigGenerator):
 
         'EDDSA-ED448': ['EdDSA-Ed448'],
         'EDDSA-ED25519': ['EdDSA-Ed25519'],
+
+        'MLDSA44': ['ML-DSA-44'],
+        'MLDSA65': ['ML-DSA-65'],
+        'MLDSA87': ['ML-DSA-87'],
     }
 
     cipher_map = {

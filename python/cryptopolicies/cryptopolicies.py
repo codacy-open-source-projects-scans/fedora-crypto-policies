@@ -6,6 +6,8 @@
 import collections
 import enum
 import fnmatch
+import functools
+import operator
 import os
 import re
 import warnings
@@ -25,10 +27,12 @@ from . import (
 INT_DEFAULTS = dict.fromkeys((
     'arbitrary_dh_groups',
     'min_dh_size', 'min_dsa_size', 'min_rsa_size',
-    '__openssl_block_sha1_signatures',  # FUTURE/TEST-FEDORA39/NO-SHA1
     'sha1_in_certs',
     'ssh_certs',
-), 0) | {'min_ec_size': 256}
+), 0) | {
+    'min_ec_size': 256,
+    '__openssl_block_sha1_signatures': 1,  # all but the LEGACY and SHA1 now
+}
 
 
 # For enum values, first value works as default,
@@ -257,11 +261,12 @@ def syntax_check_line(line, warn=False):
 
 
 class PolicySyntaxDeprecationWarning(FutureWarning, validation.PolicyWarning):
-    def __init__(self, deprecated, replacement):
+    def __init__(self, deprecated, replacement, what='option', onetoone=False):
         replacement = replacement.replace('\n', ' and ')
-        msg = f'option {deprecated} is deprecated'
-        msg += f', please rewrite your rules using {replacement}; '
-        msg += 'be advised that it is not always a 1-1 replacement'
+        msg = f'{what} {deprecated} is deprecated'
+        msg += f', please rewrite your rules using {replacement}'
+        if not onetoone:
+            msg += '; be advised that it is not always a 1-1 replacement'
         super().__init__(msg)
 
 
@@ -280,7 +285,13 @@ def preprocess_text(text):
     ...     preprocess_text('min_tls_version=TLS1.3')
     'protocol@TLS = -SSL2.0 -SSL3.0 -TLS1.0 -TLS1.1 -TLS1.2'
     """
-    text = re.sub(r'#.*', '', text)
+    magic_comments = {
+        '# %suppress_experimental_value_warnings=true',
+        '# %suppress_experimental_value_warnings=false',
+    }
+    text = re.sub(r'#.*',
+                  lambda s: s.group(0) if s.group(0) in magic_comments else '',
+                  text)
     text = text.replace('=', ' = ')
     text = '\n'.join(l.strip() for l in text.split('\n'))
     text = text.replace('\\\n', '')
@@ -327,6 +338,20 @@ def preprocess_text(text):
             matches[match.group(0)] = re.sub(regex, to, match.group(0))
         for match_fr, match_to in matches.items():
             warnings.warn(PolicySyntaxDeprecationWarning(match_fr, match_to))
+        text = re.sub(regex, to, text)
+
+    VALUE_REPLACEMENTS = {
+        'X25519-MLKEM768': 'MLKEM768-X25519',  # RHEL-99813
+    }
+    for fr, to in VALUE_REPLACEMENTS.items():
+        regex = r'\b' + fr + r'\b'
+        matches = {}
+        for match in re.finditer(regex, text):
+            matches[match.group(0)] = re.sub(regex, to, match.group(0))
+        for match_fr, match_to in matches.items():
+            warnings.warn(PolicySyntaxDeprecationWarning(match_fr, match_to,
+                                                         what='value',
+                                                         onetoone=True))
         text = re.sub(regex, to, text)
 
     dtls_versions = list(alg_lists.DTLS_PROTOCOLS[::-1])
@@ -450,6 +475,24 @@ class UnscopedCryptoPolicy:
     def scoped(self, scopes=None):
         return ScopedPolicy(self._directives, scopes or {})
 
+    @staticmethod
+    def _for_in_lines_expwarn(lines, func):
+        warn_on_experimental = True  # reset between invocations
+        ExpValWarning = validation.alg_lists.ExperimentalValueWarning
+        r = []
+        for l in lines:
+            if l == '# %suppress_experimental_value_warnings = true':
+                warn_on_experimental = False
+            elif l == '# %suppress_experimental_value_warnings = false':
+                warn_on_experimental = True
+            elif warn_on_experimental:
+                r.append(func(l))
+            else:
+                with warnings.catch_warnings(append=True):
+                    warnings.filterwarnings('ignore', category=ExpValWarning)
+                    r.append(func(l))
+        return r
+
     def read_policy_file(self, name, subpolicy=False):
         pdir = self.policydir or 'policies'
         if subpolicy:
@@ -466,11 +509,16 @@ class UnscopedCryptoPolicy:
             text = f.read()
         text = preprocess_text(text)
         lines = text.split('\n')
-        for l in lines:  # display several warnings at once
-            syntax_check_line(l, warn=True)
-        for l in lines:  # crash
-            syntax_check_line(l)
-        return [x for l in lines for x in parse_line(l)]
+        # display several warnings at once, if there are any
+        self._for_in_lines_expwarn(lines,
+                                   lambda l: syntax_check_line(l, warn=True))
+        # crash, if there are any
+        self._for_in_lines_expwarn(lines, syntax_check_line)
+
+        # return [x for l in lines for x in parse_line(l)],  # noqa: ERA001
+        # but with configurable experimental value warnings uppression
+        r = self._for_in_lines_expwarn(lines, parse_line)
+        return functools.reduce(operator.iadd, r)
 
     def __str__(self):
         def fmt(key, value):

@@ -3,21 +3,23 @@
 # Not for production use.
 # May disappear with the next update.
 
-group = +P384-MLKEM1024
 group = +P521-MLKEM1024
-group = +MLKEM1024
-group = +P256-MLKEM768
-group = +X25519-MLKEM768
-group = +MLKEM768-X25519
-group = +X448-MLKEM768
 group = +P384-MLKEM768
+group = +MLKEM1024
+group = +P256-MLKEM512
+group = +MLKEM1024-X448
+group = +X448-MLKEM768
 group = +MLKEM768
 group = +X25519-MLKEM512
-group = +P256-MLKEM512
 group = +MLKEM512
-group = +P256-KYBER768
-group = +X25519-KYBER768
-#group = +KYBER768  # We don't want to support pure KYBER in groups.
+# re-prioritizing the ones from the base policies
+group = -MLKEM768-X25519 -P256-MLKEM768 -P384-MLKEM1024
+group = -MLKEM1024-X448
+group = +MLKEM1024-X448
+group = +MLKEM768-X25519
+group = +P384-MLKEM1024
+group = +P256-MLKEM768
+group = +MLKEM768-X25519
 
 sign = +RSA3072-SPHINCSSHAKE128FSIMPLE
 sign = +P256-SPHINCSSHAKE128FSIMPLE
@@ -44,14 +46,12 @@ sign = +MLDSA87-ED448
 sign = +MLDSA87-BP384
 sign = +MLDSA87-P384
 sign = +P521-MLDSA87
-sign = +MLDSA87
 sign = +MLDSA65-ED25519
 sign = +MLDSA65-BP256
 sign = +MLDSA65-P256
 sign = +MLDSA65-RSA3072
 sign = +MLDSA65-PSS3072
 sign = +P384-MLDSA65
-sign = +MLDSA65
 sign = +MLDSA44-BP256
 sign = +MLDSA44-P256
 sign = +MLDSA44-ED25519
@@ -59,7 +59,12 @@ sign = +MLDSA44-RSA2048
 sign = +MLDSA44-PSS2048
 sign = +RSA3072-MLDSA44
 sign = +P256-MLDSA44
+# re-prioritizing the ones from the base policies
+sign = -MLDSA44 -MLDSA65 -MLDSA87
+sign = +MLDSA87
+sign = +MLDSA65
 sign = +MLDSA44
+
 
 key_exchange = +SNTRUP
 key_exchange = +KEM-ECDH
