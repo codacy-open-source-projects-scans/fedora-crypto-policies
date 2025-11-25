@@ -35,7 +35,7 @@ camellia256 = "always"
 default_disposition = "never"
 
 [asymmetric_algorithms]
-ignore_invalid = [ "x25519", "x448", "mlkem768-x25519", "mlkem1024-x448", "ed25519", "ed448", "mldsa65-ed25519", "mldsa87-ed448" ]
+ignore_invalid = [ "x25519", "x448", "mlkem768-x25519", "mlkem1024-x448", "ed25519", "ed448", "eddsa", "mldsa65-ed25519", "mldsa87-ed448" ]
 rsa1024 = "always"
 rsa2048 = "always"
 rsa3072 = "always"
@@ -53,6 +53,7 @@ x448 = "always"
 mlkem768-x25519 = "always"
 mlkem1024-x448 = "always"
 ed25519 = "always"
+eddsa = "always"
 ed448 = "always"
 mldsa65-ed25519 = "always"
 mldsa87-ed448 = "always"

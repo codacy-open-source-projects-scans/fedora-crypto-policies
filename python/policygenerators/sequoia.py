@@ -66,6 +66,7 @@ class SequoiaGenerator(ConfigGenerator):
 
     asymmetric_sign_backwards_map = {
         'ed25519': 'EDDSA-ED25519',
+        'eddsa': 'EDDSA-ED25519',  # legacy Ed25519 in v4 signatures
         'ed448': 'EDDSA-ED448',
         'mldsa65-ed25519': 'MLDSA65-ED25519',
         'mldsa87-ed448': 'MLDSA87-ED448',
@@ -92,7 +93,9 @@ class SequoiaGenerator(ConfigGenerator):
         # sequoia-openpgp 2, rpm-sequoia 1.8
         'hash': ('sha3-256', 'sha3-512'),
         'group': ('x25519', 'x448', 'mlkem768-x25519', 'mlkem1024-x448'),
-        'sign': ('ed25519', 'ed448', 'mldsa65-ed25519', 'mldsa87-ed448'),
+        # eddsa split off from ed25519 in sequoia-openpgp 2.1
+        'sign': ('ed25519', 'ed448', 'eddsa',
+                 'mldsa65-ed25519', 'mldsa87-ed448'),
         'aead': ('gcm',),
     }
 

@@ -117,8 +117,8 @@ covtest: #doctest unittest
 	@# FIXME: only covers python/cryptopolicies/ files so far
 	@# NOTE: doesn't grasp ternaries and short-circuiting operators
 	# Don't trust coverage testing
-	coverage run --source python/cryptopolicies/ --branch -m pytest -vv --doctest-modules python/ &>/dev/null
-	coverage run --append --source python/cryptopolicies/ --branch -m pytest -vv tests/unit/ &>/dev/null
+	PYTHONPATH=. coverage run --source python/cryptopolicies/ --branch -m pytest -vv --doctest-modules python/
+	PYTHONPATH=. coverage run --append --source python/cryptopolicies/ --branch -m pytest -vv tests/unit/
 	coverage report --fail-under=100
 
 test: doctest unittest check check-alternatives
