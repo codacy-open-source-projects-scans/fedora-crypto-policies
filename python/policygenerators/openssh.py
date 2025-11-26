@@ -74,6 +74,12 @@ class OpenSSHGenerator(ConfigGenerator):
         ('KEM-ECDH', 'MLKEM768-X25519', 'SHA2-256'): (
             'mlkem768x25519-sha256',
         ),
+        ('KEM-ECDH', 'P256-MLKEM768', 'SHA2-256'): (
+            'mlkem768nistp256-sha256',
+        ),
+        ('KEM-ECDH', 'P384-MLKEM1024', 'SHA2-384'): (
+            'mlkem1024nistp384-sha384',
+        ),
     }
 
     gx_map = {

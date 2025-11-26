@@ -238,9 +238,9 @@ class OpenSSLGenerator(ConfigGenerator):
         'FFDHE-4096': 'ffdhe4096',
         'FFDHE-6144': 'ffdhe6144',
         'FFDHE-8192': 'ffdhe8192',
-        'BRAINPOOL-P256R1': 'brainpoolP256r1:?brainpoolP256r1tls13',
-        'BRAINPOOL-P384R1': 'brainpoolP384r1:?brainpoolP384r1tls13',
-        'BRAINPOOL-P512R1': 'brainpoolP512r1:?brainpoolP512r1tls13',
+        'BRAINPOOL-P256R1': '?brainpoolP256r1tls13:brainpoolP256r1',
+        'BRAINPOOL-P384R1': '?brainpoolP384r1tls13:brainpoolP384r1',
+        'BRAINPOOL-P512R1': '?brainpoolP512r1tls13:brainpoolP512r1',
     }
 
     @classmethod
