@@ -2,6 +2,9 @@ CipherString = @SECLEVEL=2:kGOST:-kPSK:-kDHEPSK:-kECDHEPSK:-kRSAPSK:-kEECDH:-kRS
 Ciphersuites = 
 TLS.MinProtocol = TLSv1
 TLS.MaxProtocol = TLSv1.3
+# Disable all DTLS
+DTLS.MinProtocol = DTLSv1.2
+DTLS.MaxProtocol = DTLSv1.1
 SignatureAlgorithms = 
 Groups = 
 

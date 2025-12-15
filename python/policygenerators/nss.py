@@ -210,6 +210,9 @@ class NSSGenerator(ConfigGenerator):
         'ECDSA-': 'ECDSA',
         'DSA-': 'DSA',
         'EDDSA-ED25519': 'ED25519',
+        'MLDSA44': 'ML-DSA-44',
+        'MLDSA65': 'ML-DSA-65',
+        'MLDSA87': 'ML-DSA-87',
     }
     sign_suffix_ordmap = {
         '-MD5': 'MD5',

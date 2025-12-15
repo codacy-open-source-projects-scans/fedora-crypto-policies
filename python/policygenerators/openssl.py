@@ -325,12 +325,20 @@ class OpenSSLGenerator(ConfigGenerator):
         if policy.max_tls_version:
             s += 'TLS.MaxProtocol ='
             s += f' {cls.protocol_map[policy.max_tls_version]}\n'
+        if policy.min_tls_version is None:
+            s += '# Disable all TLS\n'
+            s += 'TLS.MinProtocol = DTLSv1.2\n'
+            s += 'TLS.MaxProtocol = DTLSv1.1\n'
         if policy.min_dtls_version:
             s += 'DTLS.MinProtocol ='
             s += f' {cls.protocol_map[policy.min_dtls_version]}\n'
         if policy.max_dtls_version:
             s += 'DTLS.MaxProtocol ='
             s += f' {cls.protocol_map[policy.max_dtls_version]}\n'
+        if policy.min_dtls_version is None:
+            s += '# Disable all DTLS\n'
+            s += 'DTLS.MinProtocol = DTLSv1.2\n'
+            s += 'DTLS.MaxProtocol = DTLSv1.1\n'
 
         sig_algs = [cls.sign_map[i] for i in p['sign'] if i in cls.sign_map]
         s += 'SignatureAlgorithms = ' + ':'.join(sig_algs) + '\n'

@@ -1,5 +1,11 @@
 CipherString = @SECLEVEL=0:-kPSK:-kDHEPSK:-kECDHEPSK:-kRSAPSK:-kEECDH:-kRSA:-aRSA:-aDSS:-AES256:-AES128:-CHACHA20:-SHA256:-3DES:!DES:!RC4:!RC2:!IDEA:-SEED:!eNULL:!aNULL:-CBC:-AESCCM:-AESGCM:-SHA1:!MD5:-SHA384:-CAMELLIA:-ARIA:-AESCCM8
 Ciphersuites = 
+# Disable all TLS
+TLS.MinProtocol = DTLSv1.2
+TLS.MaxProtocol = DTLSv1.1
+# Disable all DTLS
+DTLS.MinProtocol = DTLSv1.2
+DTLS.MaxProtocol = DTLSv1.1
 SignatureAlgorithms = 
 Groups = 
 

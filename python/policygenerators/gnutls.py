@@ -65,6 +65,9 @@ class GnuTLSGenerator(ConfigGenerator):
         'SECP256R1': 'SECP256R1',
         'SECP384R1': 'SECP384R1',
         'SECP521R1': 'SECP521R1',
+        'MLKEM768-X25519': 'X25519',
+        'P256-MLKEM768': 'SECP256R1',
+        'P384-MLKEM1024': 'SECP384R1',
     }
 
     sign_curve_map = {
@@ -216,12 +219,19 @@ class GnuTLSGenerator(ConfigGenerator):
             s += 'secure-sig-for-cert = ecdsa-sha1\n'
 
         # with allowlisting, curves now need to be enabled separately
+        enabled_curves = []
         for i in p['group']:
             if i in cls.group_curve_map:
-                s += f'enabled-curve = {cls.group_curve_map[i]}\n'
+                c = cls.group_curve_map[i]
+                if c not in enabled_curves:
+                    enabled_curves.append(c)
         for i in p['sign']:
             if i in cls.sign_curve_map:
-                s += f'enabled-curve = {cls.sign_curve_map[i]}\n'
+                c = cls.sign_curve_map[i]
+                if c not in enabled_curves:
+                    enabled_curves.append(c)
+        for c in enabled_curves:
+            s += f'enabled-curve = {c}\n'
 
         if p['cipher']:
             for i in p['cipher']:
