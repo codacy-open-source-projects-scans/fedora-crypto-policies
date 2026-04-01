@@ -19,7 +19,11 @@ group = MLKEM768-X25519 P256-MLKEM768 P384-MLKEM1024 \
         SECP256R1 SECP521R1 SECP384R1 \
         FFDHE-2048 FFDHE-3072 FFDHE-4096 FFDHE-6144 FFDHE-8192
 group@openssl = +P256-MLKEM768  # deprioritize X25519-MLKEM768
-group@{openssh,sequoia,rpm} = -MLKEM768-X25519  # not supported in FIPS ATM
+# MLKEM is not supported in openssl FIPS ATM, blocking this so apps don't use it
+group@{sequoia,rpm} = -MLKEM768-X25519 -P256-MLKEM768 -P384-MLKEM1024
+# openssh does not support MLKEM768-X25519 without fips-provider-next,
+# but it does support NIST curve hybrids
+group@openssh = -MLKEM768-X25519
 
 hash = SHA2-256 SHA2-384 SHA2-512 SHA2-224 SHA3-256 SHA3-384 SHA3-512 SHAKE-256
 

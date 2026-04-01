@@ -164,83 +164,83 @@ class OpenSSLGenerator(ConfigGenerator):
         'EDDSA-ED25519': 'ed25519',
         'EDDSA-ED448': 'ed448',
         # optional to not hard-require newer openssl version
-        'ECDSA-BRAINPOOLP256-SHA2-256': '?ecdsa_brainpoolP256r1_sha256',
-        'ECDSA-BRAINPOOLP384-SHA2-384': '?ecdsa_brainpoolP384r1_sha384',
-        'ECDSA-BRAINPOOLP512-SHA2-512': '?ecdsa_brainpoolP512r1_sha512',
+        'ECDSA-BRAINPOOLP256-SHA2-256': 'ecdsa_brainpoolP256r1_sha256',
+        'ECDSA-BRAINPOOLP384-SHA2-384': 'ecdsa_brainpoolP384r1_sha384',
+        'ECDSA-BRAINPOOLP512-SHA2-512': 'ecdsa_brainpoolP512r1_sha512',
         # provider-only, so, optional (openssl#23050) + marked experimental
-        'MLDSA44': '?mldsa44',
-        'P256-MLDSA44': '?p256_mldsa44',
-        'RSA3072-MLDSA44': '?rsa3072_mldsa44',
-        'MLDSA44-PSS2048': '?mldsa44_pss2048',
-        'MLDSA44-RSA2048': '?mldsa44_rsa2048',
-        'MLDSA44-ED25519': '?mldsa44_ed25519',
-        'MLDSA44-P256': '?mldsa44_p256',
-        'MLDSA44-BP256': '?mldsa44_bp256',
-        'MLDSA65': '?mldsa65',
-        'P384-MLDSA65': '?p384_mldsa65',
-        'MLDSA65-PSS3072': '?mldsa65_pss3072',
-        'MLDSA65-RSA3072': '?mldsa65_rsa3072',
-        'MLDSA65-P256': '?mldsa65_p256',
-        'MLDSA65-BP256': '?mldsa65_bp256',
-        'MLDSA65-ED25519': '?mldsa65_ed25519',
-        'MLDSA87': '?mldsa87',
-        'P521-MLDSA87': '?p521_mldsa87',
-        'MLDSA87-P384': '?mldsa87_p384',
-        'MLDSA87-BP384': '?mldsa87_bp384',
-        'MLDSA87-ED448': '?mldsa87_ed448',
-        'FALCON512': '?falcon512',
-        'P256-FALCON512': '?p256_falcon512',
-        'RSA3072-FALCON512': '?rsa3072_falcon512',
-        'FALCONPADDED512': '?falconpadded512',
-        'P256-FALCONPADDED512': '?p256_falconpadded512',
-        'RSA3072-FALCONPADDED512': '?rsa3072_falconpadded512',
-        'FALCON1024': '?falcon1024',
-        'P521-FALCON1024': '?p521_falcon1024',
-        'FALCONPADDED1024': '?falconpadded1024',
-        'P521-FALCONPADDED1024': '?p521_falconpadded1024',
-        'SPHINCSSHA2128FSIMPLE': '?sphincssha2128fsimple',
-        'P256-SPHINCSSHA2128FSIMPLE': '?p256_sphincssha2128fsimple',
-        'RSA3072-SPHINCSSHA2128FSIMPLE': '?rsa3072_sphincssha2128fsimple',
-        'SPHINCSSHA2128SSIMPLE': '?sphincssha2128ssimple',
-        'P256-SPHINCSSHA2128SSIMPLE': '?p256_sphincssha2128ssimple',
-        'RSA3072-SPHINCSSHA2128SSIMPLE': '?rsa3072_sphincssha2128ssimple',
-        'SPHINCSSHA2192FSIMPLE': '?sphincssha2192fsimple',
-        'P384-SPHINCSSHA2192FSIMPLE': '?p384_sphincssha2192fsimple',
-        'SPHINCSSHAKE128FSIMPLE': '?sphincsshake128fsimple',
-        'P256-SPHINCSSHAKE128FSIMPLE': '?p256_sphincsshake128fsimple',
-        'RSA3072-SPHINCSSHAKE128FSIMPLE': '?rsa3072_sphincsshake128fsimple',
+        'MLDSA44': 'mldsa44',
+        'P256-MLDSA44': 'p256_mldsa44',
+        'RSA3072-MLDSA44': 'rsa3072_mldsa44',
+        'MLDSA44-PSS2048': 'mldsa44_pss2048',
+        'MLDSA44-RSA2048': 'mldsa44_rsa2048',
+        'MLDSA44-ED25519': 'mldsa44_ed25519',
+        'MLDSA44-P256': 'mldsa44_p256',
+        'MLDSA44-BP256': 'mldsa44_bp256',
+        'MLDSA65': 'mldsa65',
+        'P384-MLDSA65': 'p384_mldsa65',
+        'MLDSA65-PSS3072': 'mldsa65_pss3072',
+        'MLDSA65-RSA3072': 'mldsa65_rsa3072',
+        'MLDSA65-P256': 'mldsa65_p256',
+        'MLDSA65-BP256': 'mldsa65_bp256',
+        'MLDSA65-ED25519': 'mldsa65_ed25519',
+        'MLDSA87': 'mldsa87',
+        'P521-MLDSA87': 'p521_mldsa87',
+        'MLDSA87-P384': 'mldsa87_p384',
+        'MLDSA87-BP384': 'mldsa87_bp384',
+        'MLDSA87-ED448': 'mldsa87_ed448',
+        'FALCON512': 'falcon512',
+        'P256-FALCON512': 'p256_falcon512',
+        'RSA3072-FALCON512': 'rsa3072_falcon512',
+        'FALCONPADDED512': 'falconpadded512',
+        'P256-FALCONPADDED512': 'p256_falconpadded512',
+        'RSA3072-FALCONPADDED512': 'rsa3072_falconpadded512',
+        'FALCON1024': 'falcon1024',
+        'P521-FALCON1024': 'p521_falcon1024',
+        'FALCONPADDED1024': 'falconpadded1024',
+        'P521-FALCONPADDED1024': 'p521_falconpadded1024',
+        'SPHINCSSHA2128FSIMPLE': 'sphincssha2128fsimple',
+        'P256-SPHINCSSHA2128FSIMPLE': 'p256_sphincssha2128fsimple',
+        'RSA3072-SPHINCSSHA2128FSIMPLE': 'rsa3072_sphincssha2128fsimple',
+        'SPHINCSSHA2128SSIMPLE': 'sphincssha2128ssimple',
+        'P256-SPHINCSSHA2128SSIMPLE': 'p256_sphincssha2128ssimple',
+        'RSA3072-SPHINCSSHA2128SSIMPLE': 'rsa3072_sphincssha2128ssimple',
+        'SPHINCSSHA2192FSIMPLE': 'sphincssha2192fsimple',
+        'P384-SPHINCSSHA2192FSIMPLE': 'p384_sphincssha2192fsimple',
+        'SPHINCSSHAKE128FSIMPLE': 'sphincsshake128fsimple',
+        'P256-SPHINCSSHAKE128FSIMPLE': 'p256_sphincsshake128fsimple',
+        'RSA3072-SPHINCSSHAKE128FSIMPLE': 'rsa3072_sphincsshake128fsimple',
     }
 
     group_pq_map = {
         # provider-only, so, optional (openssl#23050) + marked experimental
-        'MLKEM512': '?mlkem512',
-        'P256-MLKEM512': '?p256_mlkem512',
-        'X25519-MLKEM512': '?x25519_mlkem512',
-        'MLKEM768': '?mlkem768',
-        'P384-MLKEM768': '?p384_mlkem768',
-        'X448-MLKEM768': '?x448_mlkem768',
-        'MLKEM768-X25519': '?X25519MLKEM768:?x25519_mlkem768',  # new/old name
-        'P256-MLKEM768': '?SecP256r1MLKEM768:?p256_mlkem768',  # new/old name
-        'MLKEM1024': '?mlkem1024',
-        'P521-MLKEM1024': '?p521_mlkem1024',
-        'P384-MLKEM1024': '?SecP384r1MLKEM1024:?p384_mlkem1024',  # new/old
+        'MLKEM512': ('mlkem512',),
+        'P256-MLKEM512': ('p256_mlkem512',),
+        'X25519-MLKEM512': ('x25519_mlkem512',),
+        'MLKEM768': ('mlkem768',),
+        'P384-MLKEM768': ('p384_mlkem768',),
+        'X448-MLKEM768': ('x448_mlkem768',),
+        'MLKEM768-X25519': ('X25519MLKEM768', 'x25519_mlkem768'),  # new/old
+        'P256-MLKEM768': ('SecP256r1MLKEM768', 'p256_mlkem768'),  # new/old
+        'MLKEM1024': ('mlkem1024',),
+        'P521-MLKEM1024': ('p521_mlkem1024',),
+        'P384-MLKEM1024': ('SecP384r1MLKEM1024', 'p384_mlkem1024'),  # new/old
     }
 
     group_classic_map = {
-        'SECP224R1': 'secp224r1',
-        'SECP256R1': 'secp256r1',
-        'SECP384R1': 'secp384r1',
-        'SECP521R1': 'secp521r1',
-        'X25519': 'X25519',
-        'X448': 'X448',
-        'FFDHE-2048': 'ffdhe2048',
-        'FFDHE-3072': 'ffdhe3072',
-        'FFDHE-4096': 'ffdhe4096',
-        'FFDHE-6144': 'ffdhe6144',
-        'FFDHE-8192': 'ffdhe8192',
-        'BRAINPOOL-P256R1': '?brainpoolP256r1tls13:brainpoolP256r1',
-        'BRAINPOOL-P384R1': '?brainpoolP384r1tls13:brainpoolP384r1',
-        'BRAINPOOL-P512R1': '?brainpoolP512r1tls13:brainpoolP512r1',
+        'SECP224R1': ('secp224r1',),
+        'SECP256R1': ('secp256r1',),
+        'SECP384R1': ('secp384r1',),
+        'SECP521R1': ('secp521r1',),
+        'X25519': ('X25519',),
+        'X448': ('X448',),
+        'FFDHE-2048': ('ffdhe2048',),
+        'FFDHE-3072': ('ffdhe3072',),
+        'FFDHE-4096': ('ffdhe4096',),
+        'FFDHE-6144': ('ffdhe6144',),
+        'FFDHE-8192': ('ffdhe8192',),
+        'BRAINPOOL-P256R1': ('brainpoolP256r1tls13', 'brainpoolP256r1'),
+        'BRAINPOOL-P384R1': ('brainpoolP384r1tls13', 'brainpoolP384r1'),
+        'BRAINPOOL-P512R1': ('brainpoolP512r1tls13', 'brainpoolP512r1'),
     }
 
     @classmethod
@@ -340,7 +340,8 @@ class OpenSSLGenerator(ConfigGenerator):
             s += 'DTLS.MinProtocol = DTLSv1.2\n'
             s += 'DTLS.MaxProtocol = DTLSv1.1\n'
 
-        sig_algs = [cls.sign_map[i] for i in p['sign'] if i in cls.sign_map]
+        sig_algs = [f'?{cls.sign_map[i]}' for i in p['sign']
+                    if i in cls.sign_map]
         s += 'SignatureAlgorithms = ' + ':'.join(sig_algs) + '\n'
 
         # Separate groups into PQ and classic groups, generate them as follows:
@@ -348,10 +349,10 @@ class OpenSSLGenerator(ConfigGenerator):
         # This way servers will prefer any PQ over any classic,
         # and clients will send key_shares for top priority PQ
         # and top priority classic groups
-        groups_pq = [cls.group_pq_map[i] for i in p['group']
-                     if i in cls.group_pq_map]
-        groups_classic = [cls.group_classic_map[i] for i in p['group']
-                          if i in cls.group_classic_map]
+        groups_pq = [':'.join(f'?{n}' for n in cls.group_pq_map[i])
+                     for i in p['group'] if i in cls.group_pq_map]
+        groups_classic = [':'.join(f'?{n}' for n in cls.group_classic_map[i])
+                          for i in p['group'] if i in cls.group_classic_map]
         group_classes = (
             (['*' + ':'.join(groups_pq)] if groups_pq else [])
             + (['*' + ':'.join(groups_classic)] if groups_classic else [])
