@@ -163,11 +163,9 @@ class OpenSSLGenerator(ConfigGenerator):
         'RSA-PSS-RSAE-SHA2-512': 'rsa_pss_rsae_sha512',
         'EDDSA-ED25519': 'ed25519',
         'EDDSA-ED448': 'ed448',
-        # optional to not hard-require newer openssl version
         'ECDSA-BRAINPOOLP256-SHA2-256': 'ecdsa_brainpoolP256r1_sha256',
         'ECDSA-BRAINPOOLP384-SHA2-384': 'ecdsa_brainpoolP384r1_sha384',
         'ECDSA-BRAINPOOLP512-SHA2-512': 'ecdsa_brainpoolP512r1_sha512',
-        # provider-only, so, optional (openssl#23050) + marked experimental
         'MLDSA44': 'mldsa44',
         'P256-MLDSA44': 'p256_mldsa44',
         'RSA3072-MLDSA44': 'rsa3072_mldsa44',
@@ -212,7 +210,6 @@ class OpenSSLGenerator(ConfigGenerator):
     }
 
     group_pq_map = {
-        # provider-only, so, optional (openssl#23050) + marked experimental
         'MLKEM512': ('mlkem512',),
         'P256-MLKEM512': ('p256_mlkem512',),
         'X25519-MLKEM512': ('x25519_mlkem512',),
