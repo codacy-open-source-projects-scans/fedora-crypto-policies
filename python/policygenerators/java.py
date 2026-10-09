@@ -17,9 +17,9 @@ class JavaGenerator(ConfigGenerator):
         'SHA2-256': 'SHA256',
         'SHA2-384': 'SHA384',
         'SHA2-512': 'SHA512',
-        'SHA3-256': 'SHA3_256',
-        'SHA3-384': 'SHA3_384',
-        'SHA3-512': 'SHA3_512',
+        'SHA3-256': 'SHA3-256',
+        'SHA3-384': 'SHA3-384',
+        'SHA3-512': 'SHA3-512',
         'SHAKE-128': '',
         'SHAKE-256': '',
         'GOSTR94': ''
@@ -28,7 +28,7 @@ class JavaGenerator(ConfigGenerator):
     cipher_not_map = {
         'AES-256-CTR': '',
         'AES-128-CTR': '',
-        'CHACHA20-POLY1305': 'ChaCha20-Poly1305',
+        'CHACHA20-POLY1305': 'CHACHA20_POLY1305',
         'CAMELLIA-256-GCM': '',
         'CAMELLIA-128-GCM': '',
         'CAMELLIA-256-CBC': '',
@@ -175,7 +175,7 @@ class JavaGenerator(ConfigGenerator):
         sep = ', '
 
         shared = [  # unconditionally disabled
-            'MD2', 'MD5withDSA', 'MD5withECDSA'
+            'MD2', 'MD5withDSA', 'MD5withECDSA',
             'RIPEMD160withRSA', 'RIPEMD160withECDSA',
             'RIPEMD160withRSAandMGF1',
         ]

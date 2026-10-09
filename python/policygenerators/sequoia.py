@@ -70,6 +70,9 @@ class SequoiaGenerator(ConfigGenerator):
         'ed448': 'EDDSA-ED448',
         'mldsa65-ed25519': 'MLDSA65-ED25519',
         'mldsa87-ed448': 'MLDSA87-ED448',
+        'slhdsa128s': 'SLHDSA-SHAKE-128S',
+        'slhdsa128f': 'SLHDSA-SHAKE-128F',
+        'slhdsa256s': 'SLHDSA-SHAKE-256S',
     }
 
     asymmetric_always_disabled = (
@@ -95,7 +98,8 @@ class SequoiaGenerator(ConfigGenerator):
         'group': ('x25519', 'x448', 'mlkem768-x25519', 'mlkem1024-x448'),
         # eddsa split off from ed25519 in sequoia-openpgp 2.1
         'sign': ('ed25519', 'ed448', 'eddsa',
-                 'mldsa65-ed25519', 'mldsa87-ed448'),
+                 'mldsa65-ed25519', 'mldsa87-ed448',
+                 'slhdsa128s', 'slhdsa128f', 'slhdsa256s'),
         'aead': ('gcm',),
     }
 

@@ -53,6 +53,9 @@ sign = -MLDSA44-PSS2048
 sign = -RSA3072-MLDSA44
 sign = -P256-MLDSA44
 sign = -MLDSA44
+sign = -SLHDSA-SHAKE-128S
+sign = -SLHDSA-SHAKE-128F
+sign = -SLHDSA-SHAKE-256S
 
 key_exchange = -SNTRUP
 key_exchange = -KEM-ECDH

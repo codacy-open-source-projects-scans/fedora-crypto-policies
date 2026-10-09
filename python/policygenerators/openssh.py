@@ -121,6 +121,7 @@ class OpenSSHGenerator(ConfigGenerator):
         'ECDSA-SHA2-512': 'ecdsa-sha2-nistp521-cert-v01@openssh.com',
         'EDDSA-ED25519': 'ssh-ed25519-cert-v01@openssh.com',
         'EDDSA-ED25519-FIDO': 'sk-ssh-ed25519-cert-v01@openssh.com',
+        'MLDSA44-ED25519': 'ssh-mldsa44-ed25519@openssh.com',
     }
 
     @classmethod

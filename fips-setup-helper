@@ -5,6 +5,13 @@
 
 set -ueo pipefail
 context=$1
-[[ "$context" == 'anaconda' ]]
 
-exec update-crypto-policies --set FIPS
+case "$context" in
+    anaconda|coreos|cloud-init)
+        exec update-crypto-policies --set FIPS
+        ;;
+    *)
+        echo "fips-setup-helper: unknown context '$context'" >&2
+        exit 1
+        ;;
+esac

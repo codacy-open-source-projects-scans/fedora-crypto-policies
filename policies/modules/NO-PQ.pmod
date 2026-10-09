@@ -7,7 +7,7 @@
 
 group = -*MLKEM*
 
-sign = -*SPHINCS* -*FALCON* -*MLDSA*
+sign = -*SPHINCS* -*FALCON* -*MLDSA* -*SLHDSA*
 
 key_exchange = -SNTRUP -KEM-ECDH
 

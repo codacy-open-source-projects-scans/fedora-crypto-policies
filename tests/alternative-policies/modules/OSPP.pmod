@@ -13,8 +13,8 @@
 # * TLS_RSA_WITH_AES_256_CBC_SHA256  - excluded by FIPS, uses RSA key exchange
 # * TLS_RSA_WITH_AES_128_GCM_SHA256  - excluded by FIPS, uses RSA key exchange
 # * TLS_RSA_WITH_AES_256_GCM_SHA384  - excluded by FIPS, uses RSA key exchange
-# * TLS_DHE_RSA_WITH_AES_128_CBC_SHA256  - disabled, AES 128
-# * TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+# * TLS_DHE_RSA_WITH_AES_128_CBC_SHA256  - disabled, AES 128 & CBC
+# * TLS_DHE_RSA_WITH_AES_256_CBC_SHA256  - disabled, AES 128 & CBC
 # * TLS_DHE_RSA_WITH_AES_128_GCM_SHA256  - disabled, AES 128
 # * TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
 # * TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256  - disabled, AES 128
@@ -25,6 +25,9 @@
 # * TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256  - disabled, AES 128
 # * TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384  - disabled in openssl itself
 # * TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+
+# * TLS_DHE_PSK_WITH_AES_256_GCM_SHA384 - the only PSK ciphersuite allowed
+
 # Supported Groups Extension in ClientHello: secp256r1, secp384r1, secp521r1
 
 mac = -HMAC-SHA1  # see above, both SSH and TLS ended up not using it
@@ -39,16 +42,14 @@ sign = -MLDSA44 -MLDSA65 -MLDSA87 \
 # a necessary change =(
 cipher@!{SSH,TLS} = -AES-256-CTR -AES-128-CTR -AES-256-CCM -AES-128-CCM -AES-128-CBC -AES-128-GCM -AES-128-CFB
 
-ssh_cipher = -AES-256-CCM -AES-128-CCM -AES-128-GCM -AES-128-CTR
-
-tls_cipher = -AES-256-CCM -AES-128-CCM -AES-128-GCM -AES-128-CBC
+# CBC is disabled here only to make sure it has no effect
+ssh_cipher = -AES-256-CCM -AES-128-CCM -AES-128-GCM -AES-128-CTR -AES-128-CBC -AES-256-CBC
+tls_cipher = -AES-256-CCM -AES-128-CCM -AES-128-GCM -AES-128-CBC -AES-256-CBC
 
 key_exchange = -KEM-ECDH  # no KEM-ECDH, just to be sure
 
 ssh_certs = 0
 etm@SSH = DISABLE_ETM
-
-protocol = -TLS1.3
 
 min_dh_size = 3072
 min_rsa_size = 3072

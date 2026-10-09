@@ -61,9 +61,13 @@ sign = +RSA3072-MLDSA44
 sign = +P256-MLDSA44
 # re-prioritizing the ones from the base policies
 sign = -MLDSA44 -MLDSA65 -MLDSA87
+sign = -SLHDSA-SHAKE-128S -SLHDSA-SHAKE-128F -SLHDSA-SHAKE-256S
 sign = +MLDSA87
 sign = +MLDSA65
 sign = +MLDSA44
+sign = +SLHDSA-SHAKE-128S
+sign = +SLHDSA-SHAKE-128F
+sign = +SLHDSA-SHAKE-256S
 
 
 key_exchange = +SNTRUP
